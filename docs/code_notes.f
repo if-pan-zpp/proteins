@@ -868,9 +868,11 @@ c     write(1,'(a,f7.1)')'SS BOND STRENGTH',disul
          endif
          if(lsim.or.(lcpot.and..not.lparam)) then
             lsim=.true.
-            write(1,'(a,f8.2)')'#SS CONTACT EQUILIBRIUM DISTANCE=',sigma1(5)
+            write(1,'(a,f8.2)')
+     $           '#SS CONTACT EQUILIBRIUM DISTANCE=',sigma1(5)
          else
-            write(1,'(a,a)')'#CONTACTS BASED ON DATA FROM FILE ',paramfile
+            write(1,'(a,a)')
+     $           '#CONTACTS BASED ON DATA FROM FILE ',paramfile
          endif
          write(1,'(a,f6.2)') '#USING DEBYE SCREENING LENGTH',screend
       endif
@@ -1042,7 +1044,8 @@ c     sigma1(2)=dalQQ*0.5d0**(1.d0/6.d0)
          write(1,'(a,i10)')'#PULLING TIME [tau]        ',mpull
       else
          if(lmedian) write(1,'(a)')'#COMPUTING MEDIAN FOLDING TIMES'
-         if(lthermo) write(1,'(a)')'#COMPUTING THERMODYNAMIC PROPERTIES'
+         if(lthermo) write(1,'(a)')
+     $        '#COMPUTING THERMODYNAMIC PROPERTIES'
          if(lunfold) write(1,'(a)')'#STUDYING UNFOLDING'
       endif
       if(lconftm) then
@@ -1684,7 +1687,8 @@ c     -----------------------------------------
                               if(loscillate) vtarget=-1.0*vtarget
                               if(.not.lobo) then
                                  if(kconnecttime.eq.3) then
-                                    if(.not.ljwal) call connect_to_wal()
+                                    if(.not.ljwal)
+     $                                   call connect_to_wal()
                                     if(lfcc) call make_fcc()
                                     state='B ' ! AFTER ATTACHING THE BEADS
                                  else
@@ -2777,7 +2781,8 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
             nei(1,j)=nei(1,j)+1
          endif
          if(rsq.gt.rcutsq) then
-            if(kqadabs.ne.0) kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
+            if(kqadabs.ne.0)
+     $           kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
             goto 465
          endif
          r = sqrt(rsq)
@@ -2884,7 +2889,8 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                   khbful(it2,j)=khbful(it2,j)+1
                   if(inameseq(i).eq.4 .and.inameseq(j).eq.4) then
                      lssn=(nei(2,i)+nei(2,j)).lt.neimaxdisul
-                     if(lssn.and..not.l3rdcn(i).and..not.l3rdcn(j)) then
+                     if(lssn.and..not.l3rdcn(i).and.
+     $                    .not.l3rdcn(j)) then
                         l3rdcn(i)=.true.
                         l3rdcn(j)=.true.
                         knct3rd(i)=j
@@ -6663,8 +6669,8 @@ C     THIS SUBROUTINE PRINTS THE CHAIN COORDINATES IN PDB FORMAT
             write(iun,'(a,i7,6x,a,a,i6,28x)') 'TER ',iatom,ares,
      +           chainid(ib),iseq(ib)
             iatom=iatom+1
-            if(xyzcm(1,ic)-xmin.lt.cmin.or.xyzcm(2,ic)-ymin.lt.cmin.or.
-     +           xyzcm(3,ic)-zmin.lt.cmin) then
+            if(xyzcm(1,ic)-xmin.lt.cmin.or.xyzcm(2,ic)-ymin.lt.cmin
+     $           .or.xyzcm(3,ic)-zmin.lt.cmin) then
                write(iun,'(a,i5,2x,3a,i4,f12.2,2f8.2)')
      $              'HETATM',iatom,'C   ',
      +'COG',chainid(ib),iseq(ib)+1,(xyzcm(1,ic)-xmin)*unit,
@@ -6676,7 +6682,7 @@ C     THIS SUBROUTINE PRINTS THE CHAIN COORDINATES IN PDB FORMAT
      +              (xyzcm(2,ic)-ymin)*unit,(xyzcm(3,ic)-zmin)*unit
             endif
             write(iun,
-     $           '(a,i4,a,f10.1,a,f8.2,a,f7.2,a,i4,a,i3,a,i3,a,f6.3)') 
+     $           '(a,i4,a,f10.1,a,f8.2,a,f7.2,a,i4,a,i3,a,i3,a,f6.3)')
      +'REMARK',ic,' T= ',time,' RG= ',cgyr(ic)*unit,
      +' R_end_to_end= ',cend(ic)*unit,' N= ',menchain(ic+1)
      +-menchain(ic),' K1= ',knts(1,ic),' K2= ',knts(2,ic),' W= ',w(ic)
