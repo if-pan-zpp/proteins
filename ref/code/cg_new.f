@@ -31,7 +31,7 @@ c       The i,i+2 contacts purely repulsive
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
         common/verl/oxv(3,len),vrcut2sq,af,kfcc(3,len*500,2),kfccw,menw
         common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/sdch/icnt(6),ksdchn(21,4),ksdchns(len),khbful(4,len)
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/equil/kteql,ktrest,nratvel,nratveld,kconnecttime
@@ -2558,7 +2558,7 @@ C  THIS SUBROUTINE COMPUTE THE ENERGY AND FORCE OF THE WALL INTERACTIONS
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
         common/kier/afx,afy,afz,shear,lshear,lpbcx,lpbcy,lpbcz,kbperiod
         common/pos/x0(len),y0(len),z0(len),v(6,len),vxv(6,len),vnrm(len)
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/for/fx(len),fy(len),fz(len),xsep,ysep,zsep,xinv,yinv,zinv
         common/misc/adia(len),ad,ethi,mcmr,mchi,ncord,lconftm,lcpot,lsim
@@ -2675,7 +2675,7 @@ C   THIS SUBROUTINE COMPUTE THE ENERGY AND FORCE OF THE CUSTOM POTENTIAL
         logical ldynss,lss,lpbcx,lpbcy,lpbcz,lssn,lsselj,lrepcoul
         common/sequence/iseq(len),inameseq(len),aseq(len)
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/sdch/icnt(6),ksdchn(21,4),ksdchns(len),khbful(4,len)
         common/angnat/the0(len),phi0(len),lfrompdb,lsimpang,lcoilang
@@ -3097,7 +3097,7 @@ C   THIS SUBROUTINE COMPUTES THE ENERGY AND FORCE OF THE PID MODEL
         logical ldynss,lpbcx,lpbcy,lpbcz,lssn,lsselj,lbar,lcospid,lepid
         common/sequence/iseq(len),inameseq(len),aseq(len)
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/sdch/icnt(6),ksdchn(21,4),ksdchns(len),khbful(4,len)
         common/angnat/the0(len),phi0(len),lfrompdb,lsimpang,lcoilang
@@ -3407,7 +3407,7 @@ C   THIS SUBROUTINE COMPUTES THE ENERGY AND FORCE OF THE GO MODEL
         common/sequence/iseq(len),inameseq(len),aseq(len)
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
         common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/sdch/icnt(6),ksdchn(21,4),ksdchns(len),khbful(4,len)
         common/angnat/the0(len),phi0(len),lfrompdb,lsimpang,lcoilang
@@ -4163,7 +4163,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
         common/ssb/knct3rd(len),l3rdcn,disul,dmrs,amrs,rmrs,lmrs,ldynss
         common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr
         common/kier/afx,afy,afz,shear,lshear,lpbcx,lpbcy,lpbcz,kbperiod
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/nmapi/rangli(8),emj(500),ncnt,nli(5,len*50),ldet,lpid,lmj
         common/bon/bond,b(len-1),lconect,menchain(len),nchains,lii4,lcpb
@@ -6322,7 +6322,7 @@ C THIS SUBROUTINE PRINTS THE CONTACT MAP FILE
         common/angnat/the0(len),phi0(len),lfrompdb,lsimpang,lcoilang
         common/angtemp/thetemp(len),phitemp(len),chir(len),lcoildih
         common/sequence/iseq(len),inameseq(len),aseq(len)
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/chiral/chirn(len),echi,CDH,lchiral,langle,ldisimp,lwrtang
         common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
@@ -6723,7 +6723,7 @@ C IMPLEMENTATION OF THE CONSTANT VELOCITY OF ONE END
         common/vel/x1(len),y1(len),z1(len)
         common/hhar/HH1,HH2,H1,H2,potcoeff,tolerance,screend,coul,factor
         common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
-        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(4,len*1500,2),jq
+        common/cmp2/kcont,kcist(3,len*500),kqont,kqist(2,4,len*1500),jq
         common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
         common/cmapi/cntfct,imap(len*50),icn,intrhc,intrsc,intehc,intesc
         common/misc/adia(len),ad,ethi,mcmr,mchi,ncord,lconftm,lcpot,lsim
