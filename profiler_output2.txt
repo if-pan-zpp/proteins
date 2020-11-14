@@ -1,0 +1,277 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  us/call  us/call  name    
+ 74.65    122.39   122.39  1000006   122.39   122.39  evalimproper_
+  7.33    134.40    12.01  1000006    12.01    12.01  evalangles_
+  5.62    143.62     9.22  1000006     9.22     9.22  evalgo_
+  4.26    150.61     6.99  1000000     6.99    13.86  lang_
+  4.19    157.47     6.87 840009940     0.01     0.01  ran2_.constprop.0
+  1.39    159.75     2.28  1000006     2.28     2.28  prepare_
+  0.80    161.06     1.31  1000000     1.31     1.31  predct_
+  0.76    162.31     1.25  1000000     1.25     1.25  corr_
+  0.75    163.54     1.23                             MAIN__
+  0.22    163.90     0.36     5289    68.07    68.07  update_verlet_list_
+  0.02    163.94     0.04                             frame_dummy
+  0.01    163.95     0.01       55   181.83   181.83  kmt_
+  0.01    163.96     0.01                             connect_to_wal_one_by_one_
+  0.00    163.96     0.00      110     0.00     0.00  jacobi_
+  0.00    163.96     0.00       55     0.00   181.83  cgyration_
+  0.00    163.96     0.00       55     0.00     0.00  gyration_
+  0.00    163.96     0.00       55     0.00     0.00  kabsch_
+  0.00    163.96     0.00       55     0.00     0.00  sort_
+  0.00    163.96     0.00       10     0.00     0.00  print_conformation_
+  0.00    163.96     0.00        6     0.00    10.68  confstart_
+  0.00    163.96     0.00        5     0.00     3.43  intvel3d_
+  0.00    163.96     0.00        2     0.00     0.00  ran2_
+  0.00    163.96     0.00        1     0.00     0.00  compute_cmap_
+  0.00    163.96     0.00        1     0.00     0.00  load_paramfile_
+  0.00    163.96     0.00        1     0.00     0.00  load_sequence_
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.01% of 163.96 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    1.23  162.68                 MAIN__ [1]
+              122.39    0.00 1000006/1000006     evalimproper_ [2]
+                6.99    6.87 1000000/1000000     lang_ [3]
+               12.01    0.00 1000006/1000006     evalangles_ [4]
+                9.22    0.00 1000006/1000006     evalgo_ [5]
+                2.28    0.00 1000006/1000006     prepare_ [7]
+                1.31    0.00 1000000/1000000     predct_ [8]
+                1.25    0.00 1000000/1000000     corr_ [9]
+                0.36    0.00    5289/5289        update_verlet_list_ [10]
+                0.00    0.01      55/55          cgyration_ [12]
+                0.00    0.00       6/6           confstart_ [15]
+                0.00    0.00       5/5           intvel3d_ [16]
+                0.00    0.00      55/55          gyration_ [18]
+                0.00    0.00      55/55          kabsch_ [19]
+                0.00    0.00      10/10          print_conformation_ [21]
+                0.00    0.00       2/2           ran2_ [22]
+                0.00    0.00       1/1           load_paramfile_ [24]
+                0.00    0.00       1/1           compute_cmap_ [23]
+                0.00    0.00       1/1           load_sequence_ [25]
+-----------------------------------------------
+              122.39    0.00 1000006/1000006     MAIN__ [1]
+[2]     74.6  122.39    0.00 1000006         evalimproper_ [2]
+-----------------------------------------------
+                6.99    6.87 1000000/1000000     MAIN__ [1]
+[3]      8.5    6.99    6.87 1000000         lang_ [3]
+                6.87    0.00 840000000/840009940     ran2_.constprop.0 [6]
+-----------------------------------------------
+               12.01    0.00 1000006/1000006     MAIN__ [1]
+[4]      7.3   12.01    0.00 1000006         evalangles_ [4]
+-----------------------------------------------
+                9.22    0.00 1000006/1000006     MAIN__ [1]
+[5]      5.6    9.22    0.00 1000006         evalgo_ [5]
+-----------------------------------------------
+                0.00    0.00    2100/840009940     intvel3d_ [16]
+                0.00    0.00    7840/840009940     confstart_ [15]
+                6.87    0.00 840000000/840009940     lang_ [3]
+[6]      4.2    6.87    0.00 840009940         ran2_.constprop.0 [6]
+-----------------------------------------------
+                2.28    0.00 1000006/1000006     MAIN__ [1]
+[7]      1.4    2.28    0.00 1000006         prepare_ [7]
+-----------------------------------------------
+                1.31    0.00 1000000/1000000     MAIN__ [1]
+[8]      0.8    1.31    0.00 1000000         predct_ [8]
+-----------------------------------------------
+                1.25    0.00 1000000/1000000     MAIN__ [1]
+[9]      0.8    1.25    0.00 1000000         corr_ [9]
+-----------------------------------------------
+                0.36    0.00    5289/5289        MAIN__ [1]
+[10]     0.2    0.36    0.00    5289         update_verlet_list_ [10]
+-----------------------------------------------
+                                                 <spontaneous>
+[11]     0.0    0.04    0.00                 frame_dummy [11]
+-----------------------------------------------
+                0.00    0.01      55/55          MAIN__ [1]
+[12]     0.0    0.00    0.01      55         cgyration_ [12]
+                0.01    0.00      55/55          kmt_ [13]
+                0.00    0.00      55/110         jacobi_ [17]
+                0.00    0.00      55/55          sort_ [20]
+-----------------------------------------------
+                0.01    0.00      55/55          cgyration_ [12]
+[13]     0.0    0.01    0.00      55         kmt_ [13]
+-----------------------------------------------
+                                                 <spontaneous>
+[14]     0.0    0.01    0.00                 connect_to_wal_one_by_one_ [14]
+-----------------------------------------------
+                0.00    0.00       6/6           MAIN__ [1]
+[15]     0.0    0.00    0.00       6         confstart_ [15]
+                0.00    0.00    7840/840009940     ran2_.constprop.0 [6]
+-----------------------------------------------
+                0.00    0.00       5/5           MAIN__ [1]
+[16]     0.0    0.00    0.00       5         intvel3d_ [16]
+                0.00    0.00    2100/840009940     ran2_.constprop.0 [6]
+-----------------------------------------------
+                0.00    0.00      55/110         kabsch_ [19]
+                0.00    0.00      55/110         cgyration_ [12]
+[17]     0.0    0.00    0.00     110         jacobi_ [17]
+-----------------------------------------------
+                0.00    0.00      55/55          MAIN__ [1]
+[18]     0.0    0.00    0.00      55         gyration_ [18]
+-----------------------------------------------
+                0.00    0.00      55/55          MAIN__ [1]
+[19]     0.0    0.00    0.00      55         kabsch_ [19]
+                0.00    0.00      55/110         jacobi_ [17]
+-----------------------------------------------
+                0.00    0.00      55/55          cgyration_ [12]
+[20]     0.0    0.00    0.00      55         sort_ [20]
+-----------------------------------------------
+                0.00    0.00      10/10          MAIN__ [1]
+[21]     0.0    0.00    0.00      10         print_conformation_ [21]
+-----------------------------------------------
+                0.00    0.00       2/2           MAIN__ [1]
+[22]     0.0    0.00    0.00       2         ran2_ [22]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[23]     0.0    0.00    0.00       1         compute_cmap_ [23]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[24]     0.0    0.00    0.00       1         load_paramfile_ [24]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[25]     0.0    0.00    0.00       1         load_sequence_ [25]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+
+Index by function name
+
+   [1] MAIN__                 [11] frame_dummy             [8] predct_
+  [12] cgyration_             [18] gyration_               [7] prepare_
+  [23] compute_cmap_          [16] intvel3d_              [21] print_conformation_
+  [15] confstart_             [17] jacobi_                [22] ran2_
+  [14] connect_to_wal_one_by_one_ [19] kabsch_             [6] ran2_.constprop.0
+   [9] corr_                  [13] kmt_                   [20] sort_
+   [4] evalangles_             [3] lang_                  [10] update_verlet_list_
+   [5] evalgo_                [24] load_paramfile_
+   [2] evalimproper_          [25] load_sequence_
