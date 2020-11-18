@@ -2536,8 +2536,8 @@ C   THIS SUBROUTINE PREPARES VARIABLES FOR COMPUTING ENERGY AND FORCE
       common/xyforces/xuforce,xdforce,yuforce,ydforce
       common/nmapi/rangli(8),emj(500),ncnt,nli(5,len*50),ldet,lpid,lmj
       common/neigh/nei(2,len),rnei,rneisq,lposcrd,neimin,neimaxdisul
-      
-      epot=0.d0
+c Nieoznaczone zmienne (zdec. większość) są globalne
+      epot=0.d0  ! zmienna lokalna
       ncord=0
       icn=0
 !     ncnt=0
