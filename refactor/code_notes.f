@@ -5116,24 +5116,24 @@ C     FROM ITS PDB FILE
       endif
       
       do ib=1,len
-         lconect(ib)=.false.
+         lconect(ib)=.false. ! true means residue ib is connected to next residue (alternatively: is not end of a chain)
       enddo
-      nchains=0
-      menchain(1)=0
-      ib=0
+      nchains=0  ! number of chains
+      menchain(1)=0 ! index of last residue in  previous chain
+      ib=0 ! index of current residue
       xdown=0.d0
       ydown=0.d0
       zdown=0.d0
  15   read(8,'(a)',end=20) buffer
       if(buffer(1:4).ne.'ATOM') then
-         if(buffer(1:3).eq.'END') goto 20
-         if(buffer(1:3).eq.'TER') then
-            if(ib.gt.menchain(nchains+1)) then !filter out DNA chain
+         if(buffer(1:3).eq.'END') goto 20 ! end of atom info
+         if(buffer(1:3).eq.'TER') then ! terminate current chain, quite unclear as condition in if statement seems to be always true
+            if(ib.gt.menchain(nchains+1)) then !filter out DNA chain !filter out DNA chain    !(unclear)
                lconect(ib)=.false.
                nchains=nchains+1
                menchain(nchains+1)=ib
             endif
-         elseif(buffer(1:6).eq.'CRYST1') then
+         elseif(buffer(1:6).eq.'CRYST1') then ! read and scale coordinates of simalation box
             read(buffer(1:33),'(6x,3f9.3)') xup,yup,zup
             xup=xup/unit
             yup=yup/unit
@@ -5147,29 +5147,29 @@ C     FROM ITS PDB FILE
          endif
          goto 15
       endif
-      if((buffer(17:17).ne.'A').and.(buffer(17:17).ne.' ')) goto 15
+      if((buffer(17:17).ne.'A').and.(buffer(17:17).ne.' ')) goto 15 ! Alternate location indicator
       read(buffer,'(13x,a4,a3,x,a1,i4,4x,3f8.3)')
-     +     bb4,ares,ch1,ival,xval,yval,zval
+     +     bb4,ares,ch1,ival,xval,yval,zval ! bb4 - atom name, ares - residue name, ival - number of residue, x,y,z - coordinates
       read(bb4,'(a2,2x)') bb
       read(bb4,'(x,a2,x)') bb2
-      if(bb.eq.'CA'.or.bb2.eq.'CA') then
-         ib=ib+1
-         lconect(ib)=.true.
-         if(lpdb.and..not.lcoilang) lfrompdb(ib)=.true.
-         aseq(ib)=ares
-         iseq(ib)=ival
-         ch(ib)=ch1
+      if(bb.eq.'CA'.or.bb2.eq.'CA') then ! only lines with bb4 = *CA* aren't ignored
+         ib=ib+1 ! update current residue index
+         lconect(ib)=.true. ! assume it's connected to the next residue , might change later
+         if(lpdb.and..not.lcoilang) lfrompdb(ib)=.true. ! TODO: figure it out
+         aseq(ib)=ares ! set residue name
+         iseq(ib)=ival ! set number of residue, it's ib == ival if residue in data have consecutive numbers
+         ch(ib)=ch1 ! set ch (character identifying chain) of residue
          if(ib.gt.2) then
-            if(lconect(ib-1).and.ch(ib-1).ne.ch(ib)) then
-               lconect(ib-1)=.false.
+            if(lconect(ib-1).and.ch(ib-1).ne.ch(ib)) then ! if previous residue is connected and ch parameters (chain names) don't match,
+               lconect(ib-1)=.false.                      ! put residue ib in new chain
                nchains=nchains+1
                menchain(nchains+1)=ib-1
             endif
          endif
-         xn(ib)=xval/unit
+         xn(ib)=xval/unit ! set scaled x,y,z coordinates
          yn(ib)=yval/unit
          zn(ib)=zval/unit
-         if(aseq(ib).eq.'GLY') then
+         if(aseq(ib).eq.'GLY') then ! set int value for residue name
             inameseq(ib)=1
          else if(aseq(ib).eq.'PRO') then
             inameseq(ib)=2
@@ -5214,19 +5214,19 @@ C     FROM ITS PDB FILE
       goto 15
  20   continue
       close(8)
-      men=ib
+      men=ib ! number of residues
       
 c     if(.not.ldynss) then
 !     SSBONDS
 !     nssb=0
       open(8,file=filn,status='old',iostat=ierr)
  16   read(8,'(a)',end=21) buffer
-      if(buffer(1:6).eq.'SSBOND') then
+      if(buffer(1:6).eq.'SSBOND') then ! create table of indices of residue which have ss bonds
          read (buffer(16:21), '(a1,i5)' ) ch1,icys1
          read (buffer(30:35), '(a1,i5)' ) ch2,icys2
-         nssb=nssb+1
+         nssb=nssb+1 ! update number of ss bonds
          do j=1,men
-            if (ch(j).eq.ch1 .and. iseq(j).eq.icys1) then
+            if (ch(j).eq.ch1 .and. iseq(j).eq.icys1) then ! find index of residue with given ch and number
                ksb(1,nssb)=j
             endif
             if (ch(j).eq.ch2 .and. iseq(j).eq.icys2) then
@@ -5249,7 +5249,7 @@ c     endif
          nchains=nchains+1
          menchain(nchains+1)=men
       endif
-      if(lunwrap) then
+      if(lunwrap) then ! unwrap coordinates, as they are written as one periodic image with periodic boundary conditions
          xcentrall=0.d0
          ycentrall=0.d0
          zcentrall=0.d0
