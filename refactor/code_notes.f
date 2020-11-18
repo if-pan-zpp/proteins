@@ -3989,6 +3989,8 @@ C     THE LANGEVIN NOISE WHICH TAKES INTO ACCOUNT THE MASSES OF A.A.
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 C     THIS SUBROUTINE MAKES FCC BEADS
+c     FCC = "Face-Centered Cubic"; essentially, here the walls are made of
+c     actual beads
       subroutine make_fcc()
       implicit double precision (a-h,o-z)
       parameter(len=10000)
@@ -4003,9 +4005,10 @@ c     xdown=xdown-0.5*walmindst
 c     yup=yup+0.5*walmindst
 c     ydown=ydown-0.5*walmindst
       xaf=sqrt(3.0)/2.0*af      ! af is lattice constant
-      ncxt=int((xup-xdown)/xaf) ! xaf is triangle height
-      ncyt=int((yup-ydown)/af)
-      do kwx=1,ncxt
+      ncxt=int((xup-xdown)/xaf) ! xaf is triangle height ! I presume ncxt is the number
+                                ! of the beads in the X-direction
+      ncyt=int((yup-ydown)/af) ! similarly with Y-direction
+      do kwx=1,ncxt ! create the beads on the lower Z-wall
          do kwy=1,ncyt
             menw=menw+1
             x0(men+menw)=xdown+(kwx-1)*xaf
@@ -4013,7 +4016,7 @@ c     ydown=ydown-0.5*walmindst
             z0(men+menw)=zdown
          enddo
       enddo
-      do kwx=1,ncxt
+      do kwx=1,ncxt ! create the beads on the upper Z-wall
          do kwy=1,ncyt
             menw=menw+1
             x0(men+menw)=xdown+(kwx-1)*xaf
@@ -4026,6 +4029,10 @@ c     ydown=ydown-0.5*walmindst
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 C     THIS SUBROUTINE CONNECTS BEADS TO THE WALL INSTANTENOUSLY
+c     This subroutine is invoked if kconnecttime != 9 (i.e. if connection
+c     time is not set to "never"), and if !ljwal (i.e. if "flat attractive
+c     walls" option is not set); this only applies to Z walls (hence the
+c     sorting and whatnot)
       subroutine connect_to_wal()
       implicit double precision (a-h,o-z)
       parameter(len=10000)
@@ -4039,17 +4046,19 @@ c     xup=xup+0.5*walmindst
 c     xdown=xdown-0.5*walmindst
 c     yup=yup+0.5*walmindst
 c     ydown=ydown-0.5*walmindst
+
       
       do ib=1,men
          z0temp(ib)=z0(ib)
          ksorted(ib)=ib
       enddo
       call sort2(men,z0temp,ksorted) ! sort by z0
+
       j=1
       ip1=ipwn/2
       ip2=ipwn/2
       do k=1,ipwn/2
-         i=ksorted(k)
+         i=ksorted(k) ! connect ipwn/2 "top" (w.r.t. Z) residues
          xpul(j)=x0(i)
          ypul(j)=y0(i)
          zpul(j)=z0(i)-zdown
@@ -4057,7 +4066,7 @@ c     aseq(i)='TYR'
          ipw(1,j)=-1
          ipw(2,j)=i
          j=j+1
-         i=ksorted(men+1-k)
+         i=ksorted(men+1-k) ! connect ipwn/2 "bottom" (w.r.t. Z) residues
          xpul(j)=x0(i)
          ypul(j)=y0(i)
          zpul(j)=z0(i)-zup
@@ -4082,16 +4091,16 @@ C     THIS SUBROUTINE CONNECTS BEADS TO THE WALL ONE BY ONE
       
       kstartconnected=ip1+1
       kendconnected=men-ip2
-      do j=kstartconnected,kendconnected
+      do j=kstartconnected,kendconnected ! iterate over the chain
          k=ksorted(j)
-         if(z0(k).lt.zdown+walmindst) then
+         if(z0(k).lt.zdown+walmindst) then ! if close enough to bottom?, connect
             ip1=ip1+1
             ksorted(j)=ksorted(ip1)
             ksorted(ip1)=k
             ipw(1,ip1)=-1
             ipw(2,ip1)=k
          endif
-         if(z0(k).gt.zup-walmindst) then
+         if(z0(k).gt.zup-walmindst) then ! if close enough to top?, connect
             ip2=ip2+1
             ksorted(j)=ksorted(ip2)
             ksorted(ip2)=k
@@ -4099,7 +4108,7 @@ C     THIS SUBROUTINE CONNECTS BEADS TO THE WALL ONE BY ONE
             ipw(2,ip2)=k
          endif
          if(z0(k).lt.zdown+walmindst
-     +        .or.z0(k).gt.zup-walmindst) then
+     +        .or.z0(k).gt.zup-walmindst) then ! if has connected, do the common part
             xpul(k)=x0(k)
             ypul(k)=y0(k)
             if(z0(k).lt.zdown+walmindst) zpul(k)=z0(k)-zdown
@@ -4112,6 +4121,8 @@ C     THIS SUBROUTINE CONNECTS BEADS TO THE WALL ONE BY ONE
       end
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+c     This subroutine displaces one protein away from another one
+c     The proteins to be displaced are stated in config time
       subroutine displace(iprota,jprotb,away)
       implicit double precision(a-h,o-z)
       parameter(len=10000)      !maximum number of all residues together
@@ -4120,7 +4131,12 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       common/bon/bond,b(len-1),lconect,menchain(len),nchains,lii4,lcpb
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
       dimension rcena(3),rcenb(3),qcena(3),qcenb(3),tow(3)
-
+c     rcena is an average of res. positions in chain A
+c     For example, rcena_x = 1/mena \sum_{r \in A} r_x
+c     qcena is "like standard deviation" (here called gyration)
+c     To be specific, qcena_x^2 = 1/mena \sum_{r \in A} r_x^2
+c     Such is also the case with rcena, qcena; the next few lines deal
+c     with computing these four
       do k=1,3
          rcena(k)=0
          rcenb(k)=0
@@ -4133,8 +4149,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          stop
       endif
       
-      mena = menchain(iprota+1)-menchain(iprota)
-      menb = menchain(jprotb+1)-menchain(jprotb)
+      mena = menchain(iprota+1)-menchain(iprota) ! num of res. in chain A
+      menb = menchain(jprotb+1)-menchain(jprotb) ! num of res. in chain B
       
       do i=menchain(iprota)+1,menchain(iprota+1)
          rcena(1)=rcena(1)+x0(i)
@@ -4172,7 +4188,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       write(1,801) '#',(rcenb(k)*unit,k=1,3),(qcenb(l)*unit,l=1,3)
  801  format(a,6x,3(f6.2,2x),4x,3(f6.2))
       
-      toward=0
+      toward=0 ! the distance between CM of A and CM of B
       do k=1,3
          tow(k)=rcenb(k)-rcena(k) ! direction from CM of A to CM of B
          toward=toward + (tow(k))**2
@@ -4181,10 +4197,10 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       write(1,*)'CM separation between A and B ',sngl(toward*unit)
 
       do k=1,3
-         tow(k)=tow(k)/toward
+         tow(k)=tow(k)/toward ! normalize tow
       enddo
 
-      rxb=0.d0
+      rxb=0.d0 ! these are "only for reporting"
       ryb=0.d0
       rzb=0.d0
       do i=menchain(jprotb)+1,menchain(jprotb+1)
