@@ -4,13 +4,69 @@
 
 *** Functions' semantics ***
 
-predct
+predct(nen1): linie 2434 - 2475
 
-corr
+wywołania:
+1543 (if lpullrel; przed gł. częścią),
+1584 (main loop)
 
-prepare
+for i : nen1 .. men -> zł. O(men)
+tablice: (x,y,z)0[len] - pozycje, (x,y,z)1[len] - prędkości, ... (do piątej pochodnej)
+modyfikuje po kolei wszystkie pochodne (od 0 do 4) na podstawie niższych, z wz. taylora
+(omp)
 
-evalwall
+corr(deltsq, nen1): linie 2475 - 2521
+
+for i : nen1 .. men -> zł. O(men)
+tablice: (x,y,z)0[len] - pozycje, (x,y,z)1[len] - prędkości, ... (do piątej pochodnej)
+modyfikuje po kolei wszystkie pochodne (od 0 do 4)
+  na podstawie (x,y,z)err = deltsq * f(x,y,z)[len] oraz zmiennych f..
+(omp)
+
+prepare: linie 2521 - 2599
+
+  zeruje zmienne:
+    ncord, icn, intrhc, intehc,
+    icw[1..2], icnt[1..6], (x,y,z)(u,d)force, f(x,y,z)[1..men]
+
+  nei[2, 1..men] := nei[1, 1..men];
+  nei[1, 1..men] := [0:0]
+  
+  for i in 1..men
+    v[1,2,3][i] := (x,y,z)0[i+1] - (x,y,z)0[i]
+    v[4,5,6][i] := (x,y,z)0[i] - (x,y,z)0[i+2]
+
+  for i in 1..men-1
+    j = i+1
+    vxv[1,2,3][j] = v[1,2,3][i] X v[1,2,3][j] (il. wektorowy)  ; sprawdzić znaki
+    vxv[4,5,6][j] = v[4,5,6][i] X v[1,2,3][j]                  ; sprawdzić znaki
+    vnrm[j] = norma(vxv[1,2,3][j])
+    vxv[1,2,3][j] -> podziel przez normę
+
+  wywołania: 997, 1473, 1544, 1588 (ost. w main loop)
+
+evalwall: linie 2599-2714
+  
+  dwa przypadki:
+  
+  1) if (ljwal) – ljwal to zgodnie z opisem z CPC14:
+  
+  5.2.2. Flat attractive walls
+  
+If ljwal is true, the residues interact with the wall via the same quasi-
+adiabatic L-J potential as above. The only difference is that when the residue
+comes closer than walmindist to the wall, it starts to be attracted by an
+artificial bead with the same X and Y coordinates as the residue’s coordinates
+when it crosses the walmindist distance. This artificial bead does not attract
+other residues and disappears when r_i,bead > cntfct·2^(−1/6)·walmindist. This 
+can give a significant computational speed-up, as those artificial beads are
+not checked when updating the Verlet list.
+
+If the variables ljwal and lfcc are false, all the residues closer than
+walmindist to the wall are harmonically attached to it, with the spring con-
+stant HH1 and the equilibrium distance equal to the distance in the moment
+of turning on the interaction. The default value of HH1 is 30 / Å 2 , which
+corresponds to strong, covalent bonding.
 
 evalcpot
 
