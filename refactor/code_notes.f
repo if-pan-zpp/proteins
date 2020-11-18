@@ -4967,47 +4967,47 @@ c     based on all-atom VdW spheres covering
       common/rall/rx_a(len,14),ry_a(len,14),rz_a(len,14)
       common/nall/na(len),aname(len,14)
       common/radi/vrad(len,14)
-      common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr
-      common/bon/bond,b(len-1),lconect,menchain(len),nchains,lii4,lcpb
-      common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
+      common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr  ! klist - array of pairs of residues that are in contact,
+      common/bon/bond,b(len-1),lconect,menchain(len),nchains,lii4,lcpb  ! klist(3,i) contains information whether residues are in the same chain
+      common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc ! and what kind of contacts have been made by atoms
 
       alpha=(26/7.)**(1./6.)
 
       call load_allatom(filename)
       call assign_VdW_radius
 
-      klont=0
+      klont=0 ! number of pairs of residues which atoms are in contact
 
 !     BUILD CONTACT MAP
-      do 10000 ic=1,nchains
+      do 10000 ic=1,nchains ! iterate over unordered pairs of chains
          do 10000 icc=ic,nchains
 c     do 2000 ib1=1,men-2
-            do 2000 ib1=menchain(ic)+1,menchain(ic+1)
-               na1=na(ib1)
+            do 2000 ib1=menchain(ic)+1,menchain(ic+1) ! iterate over residues in first chain
+               na1=na(ib1) ! number of atoms in residue 1
                if(ic.eq.icc) then
-                  kdist=ib1+3
+                  kdist=ib1+3 ! if we are building contact map within single chain, next loop will start iterating from 4th residue of the chain
                else
-                  kdist=menchain(icc)+1
+                  kdist=menchain(icc)+1 ! if we are considering pair of diffirent chains, we will iterate over all residues of second chain
                endif
 c     do 2000 ib2=ib1+2,men
                do 2000 ib2=kdist,menchain(icc+1)
-                  na2=na(ib2)
-                  rmin=1.E+6
-                  kcc=0
-                  kccbb=0
-                  kccbs=0
-                  kccss=0
-                  kccbsbs=0
-                  kccbssb=0
-                  do 200 ja1=1,na1
+                  na2=na(ib2) ! number of atoms in residue 2
+                  rmin=1.E+6 ! minimal distance between pairs of atoms that appeared so far
+                  kcc=0      ! number of all contacts
+                  kccbb=0    ! number of backbone-backbone contacts
+                  kccbs=0    ! number of backbone-sidechains contacts
+                  kccss=0    ! number of sidechain-sidechain contacts
+                  kccbsbs=0  ! number of bsbs contacts (subset of bs contacts)
+                  kccbssb=0  ! number of bssb contacts (subset of bs contacts) - note that kccbsbs+kccbssb <= kccbs
+                  do 200 ja1=1,na1 ! iterate over all pairs of atoms from both residues
                      do 200 ja2=1,na2
                         rx=rx_a(ib1,ja1)-rx_a(ib2,ja2)
                         ry=ry_a(ib1,ja1)-ry_a(ib2,ja2)
                         rz=rz_a(ib1,ja1)-rz_a(ib2,ja2)
-                        rr=sqrt(rx*rx+ry*ry+rz*rz)
-                        vrsum=vrad(ib1,ja1)+vrad(ib2,ja2)
-                        if(rr.le.vrsum*alpha) then
-                           if(ja1.lt.5.and.ja2.lt.5) then
+                        rr=sqrt(rx*rx+ry*ry+rz*rz) ! distance between atoms
+                        vrsum=vrad(ib1,ja1)+vrad(ib2,ja2) ! vrad of atom depends on amino acid residue type and is fixed (see assign_VdW_radius function)
+                        if(rr.le.vrsum*alpha) then ! distance between atoms must be smaller than sum of their vrad parameters multiplied by alpha
+                           if(ja1.lt.5.and.ja2.lt.5) then ! in order to create contact
                               kccbb=kccbb+1
                            else if(ja1.gt.4.and.ja2.gt.4) then
                               kccss=kccss+1
@@ -5024,7 +5024,7 @@ c     do 2000 ib2=ib1+2,men
                         endif
                         if(rr.lt.rmin) rmin=rr
  200                 continue
-                     if(kcc.gt.0) then
+                     if(kcc.gt.0) then ! there are contacts between pairs of atoms from this pair of chains
                         klont=klont+1
                         klist(1,klont)=ib1
                         klist(2,klont)=ib2
@@ -5049,7 +5049,7 @@ c     do 2000 ib2=ib1+2,men
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-      function ran2(iseed)
+      function ran2(iseed) ! given seed, does sophisticated calculations with fixed numbers to get pseudorandom result in range [0, 1)
       implicit double precision(a-h,o-z)
       INTEGER idum,IM1,IM2,IMM1,IA1,IA2,IQ1,IQ2,IR1,IR2,NTAB,NDIV
 c     REAL ran2,AM,EPS,RNMX
@@ -5063,7 +5063,7 @@ c     REAL ran2,AM,EPS,RNMX
 
       if(iseed.ne.0) idum=-iseed
       if (idum.le.0) then
-         idum=max(-idum,1)
+         idum=max(-idum,1) ! since idum is integer, -idum >= 1 always holds, point of this max() unclear
          idum2=idum
          do 11 j=NTAB+8,1,-1
             k=idum/IQ1
@@ -7365,17 +7365,17 @@ C NATIVE STATE
          write(*,*)'PROGRAM STOPPED.'
          stop
       endif
-      ivalold=-1
-      ib=0
+      ivalold=-1 ! number of previous residue
+      ib=0 ! index of current residue
       do i=1,len
-         na(i)=0
+         na(i)=0 ! number of atoms in residue
       enddo
       bbo='   '
  15   read(15,'(a)',end=20) buffer
       if(buffer(1:3).eq.'END') goto 20
       if(buffer(1:4).ne.'ATOM') goto 15
       read(buffer,'(13x,a3,1x,a3,2x,i4,4x,3f8.3)')
-     +     bb,ares,ival,xval,yval,zval
+     +     bb,ares,ival,xval,yval,zval ! bb - atom name, ares - residue name, ival - residue sequence number, x,y,z - coordinates
       if(bb.eq.bbo) goto 15
       if((buffer(17:17).ne.'A').and.(buffer(17:17).ne.' ')) goto 15
       bbo=bb
@@ -7383,22 +7383,22 @@ C NATIVE STATE
          ivalold=ival
          ib=ib+1
          ja=0
-         aseq(ib)=ares
-         iseq(ib)=ival
+         aseq(ib)=ares ! set residue name
+         iseq(ib)=ival ! set residue number
       endif
       if(bb(1:1).eq.'N'.or.bb(1:1).eq.'C'.or.bb(1:1).eq.'O'.or.
-     +     bb(1:1).eq.'S')then
+     +     bb(1:1).eq.'S')then ! check whether first letter of atom name is N|C|O|S, in example 1 it is always true
          ja=ja+1
-         rx_a(ib,ja)=xval
-         ry_a(ib,ja)=yval
+         rx_a(ib,ja)=xval ! set coordinates ib - number of residue, ja - index of atom in residue
+         ry_a(ib,ja)=yval ! coordinates are NOT scaled (no division by unit)
          rz_a(ib,ja)=zval
-         na(ib)=ja
-         aname(ib,ja)=bb
+         na(ib)=ja ! set number of atoms in residue
+         aname(ib,ja)=bb ! set name of atom
       endif
       goto 15
  20   continue
       close(15)
-      men=ib
+      men=ib ! number of residues
       return
       end
 
