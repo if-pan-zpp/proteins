@@ -2536,8 +2536,8 @@ C   THIS SUBROUTINE PREPARES VARIABLES FOR COMPUTING ENERGY AND FORCE
       common/xyforces/xuforce,xdforce,yuforce,ydforce
       common/nmapi/rangli(8),emj(500),ncnt,nli(5,len*50),ldet,lpid,lmj
       common/neigh/nei(2,len),rnei,rneisq,lposcrd,neimin,neimaxdisul
-      
-      epot=0.d0
+c Nieoznaczone zmienne (zdec. większość) są globalne
+      epot=0.d0  ! zmienna lokalna
       ncord=0
       icn=0
 !     ncnt=0
@@ -4632,13 +4632,13 @@ C THIS SUBROUTINE COMPUTES THE RADIUS OF GYRATION
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
       common/mass/rmas(len),rsqmas(len)
 
-      xcm=0.d0
-      ycm=0.d0
-      zcm=0.d0
-      xmcm=0.d0
-      ymcm=0.d0
-      zmcm=0.d0
-      do i=1,men
+      xcm=0.d0 ! geometric center - x coordinate
+      ycm=0.d0 ! geometric center - y coordinate
+      zcm=0.d0 ! geometric center - z coordinate
+      xmcm=0.d0 ! center of mass - x coordinate
+      ymcm=0.d0 ! center of mass - y coordinate
+      zmcm=0.d0 ! center of mass - z coordinate
+      do i=1,men 
          xcm=xcm+x0(i)
          ycm=ycm+y0(i)
          zcm=zcm+z0(i)
@@ -4652,14 +4652,14 @@ C THIS SUBROUTINE COMPUTES THE RADIUS OF GYRATION
       xmcm=xmcm/men-xdown
       ymcm=ymcm/men-ydown
       zmcm=zmcm/men-zdown
-      rg=0.d0
+      rg=0.d0 ! basically a standard deviation
       do i=1,men
          dx=x0(i)-xcm
          dy=y0(i)-ycm
          dz=z0(i)-zcm
          rg=rg+dx*dx+dy*dy+dz*dz
       enddo
-      rg=rg/men
+      rg=rg/men 
       rg=sqrt(rg)
       return
       end
@@ -4690,26 +4690,28 @@ C     THIS SUBROUTINE COMPUTES W AND RADIUS OF GYRATION OF INDIVIDUAL CHAINS
             knts(1,ic)=klewy    ! left end of the knot
             knts(2,ic)=kprawy   ! right end of the knot
          endif
-         cxcm=0.d0
-         cycm=0.d0
-         czcm=0.d0
+         cxcm=0.d0 ! geometric center of a chain - x coordinate
+         cycm=0.d0 ! geometric center of a chain - y coordinate
+         czcm=0.d0 ! geometric center of a chain - z coordinate
          do i=1,3
             do j=1,3
                mit(i,j)=0.d0
             enddo
          enddo
-         do i=menchain(ic)+1,menchain(ic+1)
+         do i=menchain(ic)+1,menchain(ic+1) ! we sum all coordinates of a chain
             cxcm=cxcm+x0(i)
             cycm=cycm+y0(i)
             czcm=czcm+z0(i)
-         enddo
+         enddo 
+c  get an average of each coordinate
          cxcm=cxcm/chainlength
          cycm=cycm/chainlength
          czcm=czcm/chainlength
+c  save geometric center of a chain as a vector
          xyzcm(1,ic)=cxcm
          xyzcm(2,ic)=cycm
          xyzcm(3,ic)=czcm
-         crg=0.d0
+         crg=0.d0 ! basically a standard deviation
          do i=menchain(ic)+1,menchain(ic+1)
             dx=x0(i)-cxcm
             dy=y0(i)-cycm
