@@ -4665,7 +4665,7 @@ C THIS SUBROUTINE COMPUTES THE RADIUS OF GYRATION
       end
 
 C     THIS SUBROUTINE COMPUTES W AND RADIUS OF GYRATION OF INDIVIDUAL CHAINS        
-      subroutine cgyration()
+      subroutine cgyration() 
       implicit double precision (a-h,o-z)
       parameter(len=10000)
       
