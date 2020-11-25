@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package pdb.ir;
+
+enum Headers {
+  ATOM = 0; TER = 1; CRYST1 = 2; SSBOND = 3; END = 4;
+}
+
+//enum ResName {
+//  ALA =  0; ARG =  1; ASN =  2; ASP =  3; CYS =  4; GLN =  5; GLU =  6;
+//  GLY =  7; HIS =  8; ILE =  9; LEU = 10; LYS = 11; MET = 12; PHE = 13;
+//  PRO = 14; SER = 15; THR = 16; TRP = 17; TYR = 18; VAL = 19;
+//}
+
+message Atom {
+  int32 serial = 1;
+  string name = 2;
+  string alt_location = 3;
+  string residue_name = 4;
+  string chain_id = 5;
+  int32 residue_seq = 6;
+  string ins_code = 7;
+  double x = 8;
+  double y = 9;
+  double z = 10;
+  double occupancy = 11;
+  double temp_factor = 12;
+  string element_symbol = 13;
+  int32 charge = 14;
+}
+
+message Ter {
+  int32 serial = 1;
+  string residue_name = 2;
+  string chain_id = 3;
+  int32 residue_seq = 4;
+  string ins_code = 5;
+}
+
+message Cryst1 {
+  double a = 1;
+  double b = 2;
+  double c = 3;
+  double alpha = 4;
+  double beta = 5;
+  double gamma = 6;
+  string space_group = 7;
+  int32 z = 8;
+}
+
+message SSBond {
+  int32 serial = 1;
+  string chain1_id = 2;
+  int32 residue1_seq = 3;
+  string ins1_code = 4;
+  string chain2_id = 5;
+  int32 residue2_seq = 6;
+  string ins2_code = 7;
+  string sym1_op = 8;
+  string sym2_op = 9;
+  double dist = 10;
+}
+
+message End {
+}
+
+message AnyField {
+  oneof value {
+    Atom atom = 1; Ter ter = 2; Cryst1 cryst1 = 3; SSBond ssbond = 4;
+    End end = 5;
+  }
+}
+
+message Entry {
+  repeated AnyField fields = 1;
+}
