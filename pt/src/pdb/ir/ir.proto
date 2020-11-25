@@ -50,15 +50,17 @@ message Cryst1 {
 
 message SSBond {
   int32 serial = 1;
-  string chain1_id = 2;
-  int32 residue1_seq = 3;
-  string ins1_code = 4;
-  string chain2_id = 5;
-  int32 residue2_seq = 6;
-  string ins2_code = 7;
-  string sym1_op = 8;
-  string sym2_op = 9;
-  double dist = 10;
+  string residue1_name = 2;
+  string chain1_id = 3;
+  int32 residue1_seq = 4;
+  string ins1_code = 5;
+  string residue2_name = 6;
+  string chain2_id = 7;
+  int32 residue2_seq = 8;
+  string ins2_code = 9;
+  string sym1_op = 10;
+  string sym2_op = 11;
+  double dist = 12;
 }
 
 message End {
