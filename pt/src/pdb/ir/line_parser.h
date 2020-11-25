@@ -5,6 +5,6 @@
 namespace pdb::ir {
     class LineParser {
     public:
-        virtual void parse(std::string const& line, AnyField *field) = 0;
+        virtual void parse(std::string_view line, AnyField *field) = 0;
     };
 }

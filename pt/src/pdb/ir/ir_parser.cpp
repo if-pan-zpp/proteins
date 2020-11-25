@@ -1,6 +1,6 @@
 #include "ir_parser.h"
 #include "auto_line_parser.h"
-#include "util/trim.h"
+#include "util/strops.h"
 #include <string>
 #include <string_view>
 using namespace std;

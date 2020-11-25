@@ -1,11 +1,11 @@
 add_executable(pt)
 
 set(Sources main.cpp pdb/ir/ir_parser.cpp pdb/ir/auto_line_parser.cpp
-    util/trim.cpp)
+    util/strops.cpp conf/legacy_parser.cpp util/field.cpp)
 set(Headers pdb/ir/ir_parser.h pdb/ir/line_parser.h pdb/ir/auto_line_parser.h
-    util/trim.h)
-set(ProtoFiles pdb/ir/ir.proto)
-set(Resources 1ubq.pdb)
+    util/strops.h conf/legacy_parser.h util/field.h)
+set(ProtoFiles pdb/ir/ir.proto conf/legacy.proto)
+set(Resources 1ubq.pdb inputfile1)
 
 foreach(Proto IN LISTS ProtoFiles)
     protobuf_generate_cpp(ProtoSources ProtoHeaders ${Proto})

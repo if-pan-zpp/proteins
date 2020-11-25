@@ -13,6 +13,6 @@ namespace pdb::ir {
 
     public:
         AutoLineParser(Headers header, Sectors const& sectors);
-        void parse(std::string const& line, AnyField *field) override;
+        void parse(std::string_view line, AnyField *field) override;
     };
 }
