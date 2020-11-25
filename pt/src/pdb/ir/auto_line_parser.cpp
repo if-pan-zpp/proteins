@@ -1,4 +1,5 @@
 #include "auto_line_parser.h"
+#include "util/trim.h"
 using namespace google::protobuf;
 using namespace std;
 
@@ -14,12 +15,10 @@ pdb::ir::AutoLineParser::AutoLineParser(pdb::ir::Headers header,
 
 void pdb::ir::AutoLineParser::parse(const std::string &line,
         pdb::ir::AnyField *field) {
-    auto field_value_prot = factory.GetPrototype(header_msg_type);
-    auto field_value = field_value_prot->New();
-    auto fv_refl = field_value->GetReflection();
+    auto field_refl = field->GetReflection();
+    auto af_value = field_refl->MutableMessage(field, header_in_anyfield);
+    auto af_value_refl = af_value->GetReflection();
 
-    field->GetReflection()->SetAllocatedMessage(
-        field, field_value, header_in_anyfield);
     for (int i = 0; i < header_msg_type->field_count(); ++i) {
         auto header_field_type = header_msg_type->field(i);
         auto [start, end] = sectors[i];
@@ -27,17 +26,23 @@ void pdb::ir::AutoLineParser::parse(const std::string &line,
 
         switch (header_field_type->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32: {
+            sector = ::util::trim(sector);
+            if (sector.empty()) break;
+
             int32_t value = stoi(sector);
-            fv_refl->SetInt32(field_value, header_field_type, value);
+            af_value_refl->SetInt32(af_value, header_field_type, value);
             break;
         }
         case FieldDescriptor::CPPTYPE_DOUBLE: {
+            sector = ::util::trim(sector);
+            if (sector.empty()) break;
+
             double value = stod(sector);
-            fv_refl->SetDouble(field_value, header_field_type, value);
+            af_value_refl->SetDouble(af_value, header_field_type, value);
             break;
         }
         case FieldDescriptor::CPPTYPE_STRING: {
-            fv_refl->SetString(field_value, header_field_type, sector);
+            af_value_refl->SetString(af_value, header_field_type, sector);
             break;
         }
         default: {}
