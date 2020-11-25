@@ -1,11 +1,11 @@
 #include <fstream>
-#include "pdb/ir/ir_parser.h"
+#include "conf/legacy_parser.h"
 using namespace std;
 using namespace pdb::ir;
 
 int main() {
-    ifstream ubq("1ubq.pdb");
-    auto irp = IRParser();
-    auto ir = irp.parse(ubq);
+    ifstream config("inputfile1");
+    conf::LegacyParser parser;
+    parser.parse(config).PrintDebugString();
     return 0;
 }
