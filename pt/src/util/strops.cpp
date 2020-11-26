@@ -32,7 +32,7 @@ std::vector<std::string_view> util::split(string_view s) {
             beg = i;
         }
         else if (i == s.size() || isspace(s[i])) {
-            if (beg + 1 < i) res.emplace_back(&s[beg], i-beg);
+            if (beg < i) res.emplace_back(&s[beg], i-beg);
             beg = -1;
         }
     }

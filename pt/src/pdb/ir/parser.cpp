@@ -1,4 +1,4 @@
-#include "ir_parser.h"
+#include "parser.h"
 #include "auto_line_parser.h"
 #include "util/strops.h"
 #include <string>
@@ -6,7 +6,7 @@
 using namespace std;
 using namespace pdb::ir;
 
-IRParser::IRParser() {
+Parser::Parser() {
     subparsers[Headers::ATOM] = make_unique<AutoLineParser>(
         Headers::ATOM,
         AutoLineParser::Sectors {
@@ -41,12 +41,12 @@ IRParser::IRParser() {
         });
 }
 
-Entry IRParser::parse(std::istream &is) {
+Entry Parser::parse(std::istream &is) {
     Entry entry;
-    AnyField* field = nullptr;
+    AnyField* field;
+    string line;
 
-    while (is && (!field || !field->has_end())) {
-        string line; getline(is, line);
+    while (getline(is, line)) {
         string header_name(line, 0, 6);
         header_name = util::rtrim(header_name);
 
@@ -56,6 +56,7 @@ Entry IRParser::parse(std::istream &is) {
 
         field = entry.add_fields();
         subparsers.at(header)->parse(line, field);
+        if (field->has_end()) break;
     }
 
     return entry;

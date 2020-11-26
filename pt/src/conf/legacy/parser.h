@@ -2,8 +2,8 @@
 #include "legacy.pb.h"
 #include <istream>
 
-namespace conf {
-    class LegacyParser {
+namespace conf::legacy {
+    class Parser {
     public:
         LegacyConf parse(std::istream& is);
     };
