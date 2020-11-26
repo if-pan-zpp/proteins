@@ -1,6 +1,5 @@
 #include "field.h"
 #include "strops.h"
-#include <charconv>
 using namespace std;
 using namespace util;
 using namespace google::protobuf;
@@ -37,13 +36,10 @@ void Field::setFrom(std::string_view s) {
         break;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-        static vector<string> Ts = { "T", "t", "true" };
-        static vector<string> Fs = { "F", "f", "false" };
-
-        if (find(Ts.begin(), Ts.end(), s) != Ts.end()) {
+        if (s == "T") {
             refl->SetBool(message, field, true);
         }
-        else if (find(Fs.begin(), Fs.end(), s) != Fs.end()) {
+        else if (s == "F") {
             refl->SetBool(message, field, false);
         }
         break;

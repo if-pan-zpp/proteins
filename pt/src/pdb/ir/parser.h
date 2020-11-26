@@ -7,12 +7,12 @@
 #include "line_parser.h"
 
 namespace pdb::ir {
-    class IRParser {
+    class Parser {
     private:
         std::unordered_map<Headers, std::unique_ptr<LineParser>> subparsers;
 
     public:
-        IRParser();
+        Parser();
         Entry parse(std::istream& is);
     };
 }

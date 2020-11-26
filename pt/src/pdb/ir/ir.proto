@@ -1,10 +1,6 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package pdb.ir;
-
-enum Headers {
-  ATOM = 0; TER = 1; CRYST1 = 2; SSBOND = 3; END = 4;
-}
 
 //enum ResName {
 //  ALA =  0; ARG =  1; ASN =  2; ASP =  3; CYS =  4; GLN =  5; GLU =  6;
@@ -13,57 +9,61 @@ enum Headers {
 //}
 
 message Atom {
-  int32 serial = 1;
-  string name = 2;
-  string alt_location = 3;
-  string residue_name = 4;
-  string chain_id = 5;
-  int32 residue_seq = 6;
-  string ins_code = 7;
-  double x = 8;
-  double y = 9;
-  double z = 10;
-  double occupancy = 11;
-  double temp_factor = 12;
-  string element_symbol = 13;
-  int32 charge = 14;
+  optional int32 serial = 1;
+  optional string name = 2;
+  optional string alt_location = 3;
+  optional string residue_name = 4;
+  optional string chain_id = 5;
+  optional int32 residue_seq = 6;
+  optional string ins_code = 7;
+  optional double x = 8;
+  optional double y = 9;
+  optional double z = 10;
+  optional double occupancy = 11;
+  optional double temp_factor = 12;
+  optional string element_symbol = 13;
+  optional int32 charge = 14;
 }
 
 message Ter {
-  int32 serial = 1;
-  string residue_name = 2;
-  string chain_id = 3;
-  int32 residue_seq = 4;
-  string ins_code = 5;
+  optional int32 serial = 1;
+  optional string residue_name = 2;
+  optional string chain_id = 3;
+  optional int32 residue_seq = 4;
+  optional string ins_code = 5;
 }
 
 message Cryst1 {
-  double a = 1;
-  double b = 2;
-  double c = 3;
-  double alpha = 4;
-  double beta = 5;
-  double gamma = 6;
-  string space_group = 7;
-  int32 z = 8;
+  optional double a = 1;
+  optional double b = 2;
+  optional double c = 3;
+  optional double alpha = 4;
+  optional double beta = 5;
+  optional double gamma = 6;
+  optional string space_group = 7;
+  optional int32 z = 8;
 }
 
 message SSBond {
-  int32 serial = 1;
-  string residue1_name = 2;
-  string chain1_id = 3;
-  int32 residue1_seq = 4;
-  string ins1_code = 5;
-  string residue2_name = 6;
-  string chain2_id = 7;
-  int32 residue2_seq = 8;
-  string ins2_code = 9;
-  string sym1_op = 10;
-  string sym2_op = 11;
-  double dist = 12;
+  optional int32 serial = 1;
+  optional string residue1_name = 2;
+  optional string chain1_id = 3;
+  optional int32 residue1_seq = 4;
+  optional string ins1_code = 5;
+  optional string residue2_name = 6;
+  optional string chain2_id = 7;
+  optional int32 residue2_seq = 8;
+  optional string ins2_code = 9;
+  optional string sym1_op = 10;
+  optional string sym2_op = 11;
+  optional double dist = 12;
 }
 
 message End {
+}
+
+enum Headers {
+  ATOM = 0; TER = 1; CRYST1 = 2; SSBOND = 3; END = 4;
 }
 
 message AnyField {

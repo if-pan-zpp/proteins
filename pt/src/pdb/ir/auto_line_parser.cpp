@@ -15,7 +15,7 @@ pdb::ir::AutoLineParser::AutoLineParser(pdb::ir::Headers header,
 
 void pdb::ir::AutoLineParser::parse(std::string_view line,
         pdb::ir::AnyField *field) {
-    auto field_refl = field->GetReflection();
+    auto field_refl = AnyField::GetReflection();
     auto af_value = field_refl->MutableMessage(field, header_in_anyfield);
     auto af_value_refl = af_value->GetReflection();
 
