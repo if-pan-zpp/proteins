@@ -4903,28 +4903,28 @@ c     based on cut-off length dnat
       klont=0
 
       do 10000 ic=1,nchains
-         do 10000 icc=ic,nchains
+         do 10000 icc=ic,nchains ! iterate over pairs of chains
             do 2000 ib1=menchain(ic)+1,menchain(ic+1)
                if(ic.eq.icc) then
                   kdist=ib1+3
                else
                   kdist=menchain(icc)+1
                endif
-               do 2000 ib2=kdist,menchain(icc+1)
+               do 2000 ib2=kdist,menchain(icc+1) ! iterate over pairs of residues in chains
                   dx=xn(ib1)-xn(ib2)
                   dy=yn(ib1)-yn(ib2)
                   dz=zn(ib1)-zn(ib2)
-                  if(lpbcx) dx = dx-xsep*nint(dx*xinv)
+                  if(lpbcx) dx = dx-xsep*nint(dx*xinv) ! calculate distances if PBC are used
                   if(lpbcy) dy = dy-ysep*nint(dy*yinv)
                   if(lpbcz) dz = dz-zsep*nint(dz*zinv)
                   dal=dx*dx+dy*dy+dz*dz
-                  dal=dsqrt(dal)
-                  dcut=dnat
+                  dal=dsqrt(dal) ! compute distance between residues
+                  dcut=dnat ! cutoff given as function argument
                   if(lcdnat) dcut=c216*
      $                 sigma1(inameseq(ib1)*21+inameseq(ib2))
-                  if(dal.le.dcut) then
+                  if(dal.le.dcut) then ! the two residues are in contact
                      klont=klont+1
-                     klist(1,klont)=ib1
+                     klist(1,klont)=ib1 ! klist explained in compute_contact_map function
                      klist(2,klont)=ib2
                      if(ic.eq.icc) then
                         klist(3,klont)=1
@@ -4959,13 +4959,13 @@ C     THIS SUBROUTINE READS THE NATIVE COUPLINGS WITHIN GO-MODEL FROM FILE
       read(98,*) icn
       read(98,*) men
       do i=1,icn
-         read(98,*)(klist(j,i),j=1,2),sont(i)
+         read(98,*)(klist(j,i),j=1,2),sont(i) ! klist explained in compute_contact_map function
          klist(3,i)=1           ! TODO make it -1 for different chains
       enddo
 
       klont=icn
       do i=1,men
-         read(98,*) the0(i),phi0(i)
+         read(98,*) the0(i),phi0(i) ! read angles from PDB file
          lfrompdb(i)=.true.
       enddo
       close(98)
@@ -5042,7 +5042,7 @@ c     do 2000 ib2=ib1+2,men
                         endif
                         if(rr.lt.rmin) rmin=rr
  200                 continue
-                     if(kcc.gt.0) then ! there are contacts between pairs of atoms from this pair of chains
+                     if(kcc.gt.0) then ! there are contacts between pairs of residues from this pair of chains
                         klont=klont+1
                         klist(1,klont)=ib1
                         klist(2,klont)=ib2
