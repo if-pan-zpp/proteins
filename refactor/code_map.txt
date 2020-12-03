@@ -118,7 +118,13 @@ kmt
 
 compute_rmsd
 
-norma
+kabsch(ns,q,q_trg,d)
+
+norma(a): 6153 - 6166
+
+Bierze macierz 3x3 (jako zestaw trzech pionowych wektorów) i je normalizuje
+(w normie euklidesowej).
+wołana w 6099 (wewn. funkcji kabsch)
 
 pvector
 
@@ -146,7 +152,13 @@ build_titin
 
 interdomain
 
-amino_acid_mass
+amino_acid_mass : 7162 - 7235
+
+Wypełnia tablice rmas[1..men] masami poszczególnych aminokwasów.
+Do zmiennej avmas zapisuje średnią masę aminokwasu w białku.
+Wypełnia tablice: rsqmas[i] = sqrt(rmas[i] / avgmas)
+
+Wywoływana w linii 753 (tylko jeżeli lmass)
 
 model_chirality
 
