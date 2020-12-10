@@ -5,6 +5,6 @@
 namespace conf::legacy {
     class Parser {
     public:
-        LegacyConf parse(std::istream& is);
+        Conf parse(std::istream& is);
     };
 }

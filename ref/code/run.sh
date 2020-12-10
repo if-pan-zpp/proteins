@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../data/example1/
 gfortran -Ofast -march=native ../../code/cg.f -o cg
-env OMP_NUM_THREADS=4 ./cg inputfile1 > test1.log
+time ./cg inputfile1 > test1.log
 mkdir -p ../../results/example1/
 mv test1* ../../results/example1/
 

@@ -1,10 +1,11 @@
 #include <fstream>
-#include "conf/legacy/parser.h"
+#include "pdb/ir/parser.h"
 using namespace std;
 
 int main() {
-    ifstream config("inputfile1");
-    conf::legacy::Parser parser;
-    parser.parse(config).PrintDebugString();
+    ifstream config("1ubq.pdb");
+    pdb::ir::Parser parser;
+    auto ir = parser.parse(config);
+    ir.PrintDebugString();
     return 0;
 }
