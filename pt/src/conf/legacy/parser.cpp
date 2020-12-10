@@ -6,11 +6,11 @@ using namespace conf::legacy;
 using namespace std;
 using namespace google::protobuf;
 
-LegacyConf Parser::parse(istream &is) {
+Conf Parser::parse(istream &is) {
     string line;
-    LegacyConf conf;
-    auto refl = LegacyConf::GetReflection();
-    auto desc = LegacyConf::GetDescriptor();
+    Conf conf;
+    auto refl = Conf::GetReflection();
+    auto desc = Conf::GetDescriptor();
 
     while (getline(is, line)) {
         auto parts = ::util::split(line);

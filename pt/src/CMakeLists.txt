@@ -1,9 +1,10 @@
 add_executable(pt)
 
 set(Sources main.cpp pdb/ir/parser.cpp pdb/ir/auto_line_parser.cpp
-    util/strops.cpp conf/legacy/parser.cpp util/field.cpp)
+    util/strops.cpp conf/legacy/parser.cpp util/field.cpp state/state.cpp)
 set(Headers pdb/ir/parser.h pdb/ir/line_parser.h pdb/ir/auto_line_parser.h
-    util/strops.h conf/legacy/parser.h util/field.h)
+    util/strops.h conf/legacy/parser.h util/field.h state/state.h
+    conf/units.h state/def.h solver/solver.h)
 set(ProtoFiles pdb/ir/ir.proto conf/legacy/legacy.proto)
 set(Resources 1ubq.pdb inputfile1)
 

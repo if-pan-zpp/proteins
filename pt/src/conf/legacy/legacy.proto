@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package conf.legacy;
 
-message LegacyConf {
+message Conf {
   optional int32 klenstr = 1;
   optional string file = 2;
   optional string seqfile = 3;
