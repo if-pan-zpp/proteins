@@ -1,4 +1,4 @@
-#include "strops.h"
+#include "str.h"
 #include <algorithm>
 using namespace std;
 

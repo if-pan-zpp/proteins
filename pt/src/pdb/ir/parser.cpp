@@ -1,6 +1,6 @@
 #include "parser.h"
 #include "auto_line_parser.h"
-#include "util/strops.h"
+#include "util/str.h"
 #include <string>
 #include <string_view>
 using namespace std;
@@ -43,7 +43,7 @@ Parser::Parser() {
 
 Entry Parser::parse(std::istream &is) {
     Entry entry;
-    AnyField* field;
+    Field* field;
     string line;
 
     while (getline(is, line)) {

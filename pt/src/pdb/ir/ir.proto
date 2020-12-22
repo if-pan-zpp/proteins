@@ -66,7 +66,7 @@ enum Headers {
   ATOM = 0; TER = 1; CRYST1 = 2; SSBOND = 3; END = 4;
 }
 
-message AnyField {
+message Field {
   oneof value {
     Atom atom = 1; Ter ter = 2; Cryst1 cryst1 = 3; SSBond ssbond = 4;
     End end = 5;
@@ -74,5 +74,5 @@ message AnyField {
 }
 
 message Entry {
-  repeated AnyField fields = 1;
+  repeated Field fields = 1;
 }

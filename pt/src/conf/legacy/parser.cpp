@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "util/strops.h"
+#include "util/str.h"
 #include "util/field.h"
 #include <string>
 using namespace conf::legacy;

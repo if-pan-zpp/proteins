@@ -1,5 +1,5 @@
 #include "field.h"
-#include "strops.h"
+#include "str.h"
 using namespace std;
 using namespace util;
 using namespace google::protobuf;
