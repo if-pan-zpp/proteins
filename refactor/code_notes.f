@@ -7135,8 +7135,8 @@ C THIS SUBROUTINE DISALLOWS CONTACTS BETWEEN DOMAINS
       common/cmap/kront,krist(3,len*500),klont,klist(3,len*50),lcintr
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
       dimension klst(3,len*20)
-      ! divide residues into ndomain equal (barring last one, potentially smaller) domains
-      ! then filter out contacts between residues located in diffirent domains
+      
+      ! filter out contacts between residues located in diffirent domains
       idsize=men/ndomain
       kn=0
       do 1000 k=1,klont
@@ -7242,7 +7242,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       logical lfrompdb(len),lconect(len),lchiral,langle,lsimpang
       character aseq*3
       common/bon/bond,b(len-1),lconect,menchain(len),nchains,lii4,lcpb
-      common/nat/xn(len),yn(len),zn(len),enative,ksb(2,len/10),nssb
       common/nat/xn(len),yn(len),zn(len),enative,ksb(2,len/10),nssb
       common/angnat/the0(len),phi0(len),lfrompdb,lsimpang,lcoilang
       common/sig/sigma1(500),sigma0,sont(len*99),cut,rcut,rcutsq,cutsq
@@ -8291,7 +8290,7 @@ c ux2=x0(ib)-x0(ib+1)
       u12=min(u12,1.d0)
       u12=max(u12,-1.d0)
       theta=dacos(u12)
-    ! theta is returned result, no other impact on calculations
+      ! theta is returned result, no other impact on calculations
       return
       end
 
@@ -8333,7 +8332,7 @@ C THIS SUBROUTINE RETURN THE DIHEDRAL ANGLE AT THE THIRD SITE
 
       di=vx1*ux3+vy1*uy3+vz1*uz3
       if(di.lt.0.d0) phi=-phi
-! phi is returned result, no other impact on calculations
+      ! phi is returned result, no other impact on calculations
       return
       end
 
