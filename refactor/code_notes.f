@@ -4994,7 +4994,7 @@ c     based on all-atom VdW spheres covering
       call load_allatom(filename)
       call assign_VdW_radius
 
-      klont=0 ! number of pairs of residues which atoms are in contact
+      klont=0 ! number of pairs of residues whose atoms are in contact
 
 !     BUILD CONTACT MAP
       do 10000 ic=1,nchains ! iterate over unordered pairs of chains
@@ -5146,7 +5146,7 @@ C     FROM ITS PDB FILE
       if(buffer(1:4).ne.'ATOM') then
          if(buffer(1:3).eq.'END') goto 20 ! end of atom info
          if(buffer(1:3).eq.'TER') then ! terminate current chain, quite unclear as condition in if statement seems to be always true
-            if(ib.gt.menchain(nchains+1)) then !filter out DNA chain !filter out DNA chain    !(unclear)
+            if(ib.gt.menchain(nchains+1)) then !filter out DNA chain  !(unclear)
                lconect(ib)=.false.
                nchains=nchains+1
                menchain(nchains+1)=ib
@@ -7080,7 +7080,8 @@ C THIS SUBROUTINE CONNECTS THE DOMAINS FOR THE TITIN
          write(*,'(a)')'PROGRAM STOPPED.'
          stop
       endif
-
+      ! make (ndomain - 1) copies of all residues, placing them at some distance
+      ! from original and preserving their relative positions and contacts
       rx=xn(men)-xn(1)
       ry=yn(men)-yn(1)
       rz=zn(men)-zn(1)
@@ -7135,6 +7136,7 @@ C THIS SUBROUTINE DISALLOWS CONTACTS BETWEEN DOMAINS
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
       dimension klst(3,len*20)
       
+      ! filter out contacts between residues located in diffirent domains
       idsize=men/ndomain
       kn=0
       do 1000 k=1,klont
@@ -7233,7 +7235,7 @@ C THIS SUBROUTINE READS THE MASSES OF AMINO ACIDS
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+! calculate chirn for each residue
       subroutine model_chirality
       implicit double precision(a-h,o-z)
       parameter(len=10000)
@@ -7266,7 +7268,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             aa=b(ib)*b(ib1)*b(ib2)
 c     aa=bond**3
             chirn(ib)=as/aa
-            if(lsimpang) chirn(ib)=sigma1(min(inameseq(ib),3))
+            if(lsimpang) chirn(ib)=sigma1(min(inameseq(ib),3)) ! this sigma1 is always 1.5
          endif
  2000 continue
 c     do ib=1,men-3
@@ -7291,14 +7293,14 @@ C CHIRALITY POTENTIALS
       common/pos/x0(len),y0(len),z0(len),v(6,len),vxv(6,len),vnrm(len)
       common/for/fx(len),fy(len),fz(len),xsep,ysep,zsep,xinv,yinv,zinv
       dimension xs(len),ys(len),zs(len)
-
+        ! the commented formulas are equivalent to used ones
       do 1000 ib=1,men-1
          ib1=ib+1
          xs(ib) = v(1,ib)       !=x0(ib1)-x0(ib)
          ys(ib) = v(2,ib)       !=y0(ib1)-y0(ib)
          zs(ib) = v(3,ib)       !=z0(ib1)-z0(ib)
  1000 continue
-
+    ! calculate chir list similar to chirn in model_chirality, but without division by b(ib)*b(ib+1)
       do 2000 ib=1,men-3
          if(lconect(ib) .and. lconect(ib+1)) then
             ib1=ib+1
@@ -7574,7 +7576,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !     CHECK AND CORRECTION
       do ib=1,men
          nat=na(ib)
-         if(nat.lt.nb(ib)) then
+         if(nat.lt.nb(ib)) then  ! compare number of atoms in amino acid residue in file with real life number 
             write(1,*)'AMINO ACID HAS FEWER ATOMS THAN SHOULD BE'
             write(1,'(i5,2x,a3,2x,2i6)')iseq(ib),aseq(ib),nat,nb(ib)
          else if(nat.gt.nb(ib)) then
@@ -7583,10 +7585,10 @@ c     write(1,'(i5,2x,a3,2x,2i6)')iseq(ib),aseq(ib),nat,nb(ib)
 c     do j=1,nat
 c     write(1,'(a3,2x,i3,2x,a3)')aseq(ib),iseq(ib),aname(ib,j)
 c     enddo
-            nat=nb(ib)
-            na(ib)=nb(ib)
+            nat=nb(ib)  ! above there is commented code that returns error when number of atoms is higher that expected, 
+            na(ib)=nb(ib) ! but here we ignore the excess atoms and go on
          endif
-         do j=1,nat
+         do j=1,nat ! set fixed values of vrad for specific atoms
             ares=aseq(ib)
             ana=aname(ib,j)
             rad=vrad(ib,j)
@@ -7612,7 +7614,7 @@ c     enddo
       end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+      ! with write commands commented, this subroutine's only impact is calculating sont list and returning asigma
       subroutine gopotential(asigma)
       implicit double precision(a-h,o-z)
       parameter(len=10000)
@@ -7692,7 +7694,7 @@ c     enddo
       end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+      ! computes lists the0 and phi0, which are native bond and dihedral angles respectively
       subroutine compute_native_angles
       implicit double precision(a-h,o-z)
       parameter(len=10000)
@@ -7728,7 +7730,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+! apparently this subroutine is never called in program
       subroutine angeval(epot)
       implicit double precision(a-h,o-z)
       parameter(len=10000)
@@ -7940,7 +7942,8 @@ c     if(j.eq.2) theta=min(theta,3.03)
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+! compute phi for residues i, i-1, i+1, and j. phi is then saved in rangli list in compute_details
+! and the value is only read by print_map
       subroutine countpid(i,j,phi)
       implicit double precision(a-h,o-z)
       parameter(len=10000)
@@ -8287,7 +8290,7 @@ c ux2=x0(ib)-x0(ib+1)
       u12=min(u12,1.d0)
       u12=max(u12,-1.d0)
       theta=dacos(u12)
-
+      ! theta is returned result, no other impact on calculations
       return
       end
 
@@ -8329,7 +8332,7 @@ C THIS SUBROUTINE RETURN THE DIHEDRAL ANGLE AT THE THIRD SITE
 
       di=vx1*ux3+vy1*uy3+vz1*uz3
       if(di.lt.0.d0) phi=-phi
-
+      ! phi is returned result, no other impact on calculations
       return
       end
 
