@@ -1,0 +1,209 @@
+#!/bin/sh
+rm go_sim.xg
+rm go_sim.lib
+
+gfortran get_nres.f -c -o get_nres.og
+gfortran get_nres2.f -c -o get_nres2.og
+gfortran assign_vdw_radii.f -c -o assign_vdw_radii.og
+gfortran make_contact_map.f -c -o make_contact_map.og
+gfortran read_all_atom.f -c -o read_all_atom.og
+gfortran get_c_alpha_coordinates.f -c -o get_c_alpha_coordinates.og
+gfortran ran2.f -c -o ran2.og
+gfortran gopotential612.f -c -o gopotential612.og
+gfortran main_loop_th.f -c -o main_loop_th.og
+gfortran main_loop_su.f -c -o main_loop_su.og
+gfortran main_loop_folding.f -c -o main_loop_folding.og
+gfortran main_loop_pulling.f -c -o main_loop_pulling.og
+gfortran evalgo612.f -c -o evalgo612.og
+gfortran evalgo612shift.f -c -o evalgo612shift.og
+gfortran evalgo1012.f -c -o evalgo1012.og
+gfortran evalgo61012.f -c -o evalgo61012.og
+gfortran model_chirality.f -c -o model_chirality.og
+gfortran eval_chirality.f -c -o eval_chirality.og
+gfortran update_vlist.f -c -o update_vlist.og
+gfortran write_pdb.f -c -o write_pdb.og
+gfortran write_pdb_z.f -c -o write_pdb_z.og
+gfortran gyration.f -c -o gyration.og
+gfortran brown_dyn.f -c -o brown_dyn.og
+gfortran leapfrog_dyn.f -c -o leapfrog_dyn.og
+gfortran compute_rmsd.f -c -o compute_rmsd.og
+gfortran eigsrt.f -c -o eigsrt.og
+gfortran jacobi.f -c -o jacobi.og
+gfortran kabsch.f -c -o kabsch.og
+gfortran norma.f -c -o norma.og
+gfortran pvector.f -c -o pvector.og
+gfortran get_chains.f -c -o get_chains.og
+gfortran contact_fluct.f -c -o contact_fluct.og
+gfortran get_ss_bonds.f -c -o get_ss_bonds.og
+gfortran corr.f -c -o corr.og
+gfortran predct.f -c -o predct.og
+gfortran langvin.f -c -o langvin.og
+gfortran intvel3d.f -c -o intvel3d.og
+gfortran get_nat_angles.f -c -o get_nat_angles.og
+gfortran eval_angles.f -c -o eval_angles.og
+gfortran force_torsion.f -c -o force_torsion.og
+gfortran force_bending.f -c -o force_bending.og
+gfortran center.f -c -o center.og
+gfortran get_surface_pot.f -c -o get_surface_pot.og
+gfortran calc_w_rg.f -c -o calc_w_rg.og
+gfortran get_zmin.f -c -o get_zmin.og
+gfortran get_initial_coordinates.f -c -o get_initial_coordinates.og
+gfortran line_config.f -c -o line_config.og
+gfortran get_ip1_ip2.f -c -o get_ip1_ip2.og
+gfortran sort_set.f -c -o sort_set.og
+gfortran vafm.f -c -o vafm.og
+gfortran get_eij.f -c -o get_eij.og
+gfortran get_nz.f -c -o get_nz.og
+gfortran evalsurf.f -c -o evalsurf.og
+gfortran kmt.f -c -o kmt.og
+gfortran get_add_bonds.f -c -o get_add_bonds.og
+gfortran get_knot_number.f -c -o get_knot_number.og
+gfortran get_knot_limits.f -c -o get_knot_limits.og
+gfortran afm.f -c -o afm.og
+gfortran get_add_contacts.f -c -o get_add_contacts.og
+gfortran make_contact_map2.f -c -o make_contact_map2.og
+gfortran get_rem_contacts.f -c -o get_rem_contacts.og
+gfortran get_add_bonds_numb.f -c -o get_add_bonds_numb.og
+gfortran read_contact_map.f -c -o read_contact_map.og
+gfortran get_nc.f -c -o get_nc.og
+
+#gfortran evalwall_ZnO.f -c -o evalwall_ZnO.og
+#gfortran evalwall_Au.f -c -o evalwall_Au.og
+
+ar -rv go_sim.lib get_nres.og
+ar -rv go_sim.lib get_nres2.og
+ar -rv go_sim.lib assign_vdw_radii.og
+ar -rv go_sim.lib make_contact_map.og
+ar -rv go_sim.lib read_all_atom.og
+ar -rv go_sim.lib get_c_alpha_coordinates.og
+ar -rv go_sim.lib ran2.og
+ar -rv go_sim.lib main_loop_th.og
+ar -rv go_sim.lib main_loop_su.og
+ar -rv go_sim.lib main_loop_folding.og
+ar -rv go_sim.lib main_loop_pulling.og
+ar -rv go_sim.lib gopotential612.og
+ar -rv go_sim.lib evalgo612.og
+ar -rv go_sim.lib evalgo612shift.og
+ar -rv go_sim.lib evalgo1012.og
+ar -rv go_sim.lib evalgo61012.og
+ar -rv go_sim.lib model_chirality.og
+ar -rv go_sim.lib eval_chirality.og
+ar -rv go_sim.lib update_vlist.og
+ar -rv go_sim.lib write_pdb.og
+ar -rv go_sim.lib write_pdb_z.og
+ar -rv go_sim.lib gyration.og
+ar -rv go_sim.lib brown_dyn.og
+ar -rv go_sim.lib leapfrog_dyn.og
+ar -rv go_sim.lib compute_rmsd.og
+ar -rv go_sim.lib eigsrt.og
+ar -rv go_sim.lib jacobi.og
+ar -rv go_sim.lib kabsch.og
+ar -rv go_sim.lib norma.og
+ar -rv go_sim.lib pvector.og
+ar -rv go_sim.lib get_chains.og
+ar -rv go_sim.lib contact_fluct.og
+ar -rv go_sim.lib get_ss_bonds.og
+ar -rv go_sim.lib corr.og
+ar -rv go_sim.lib predct.og
+ar -rv go_sim.lib langvin.og
+ar -rv go_sim.lib intvel3d.og
+ar -rv go_sim.lib get_nat_angles.og
+ar -rv go_sim.lib eval_angles.og
+ar -rv go_sim.lib force_torsion.og
+ar -rv go_sim.lib force_bending.og
+ar -rv go_sim.lib center.og
+ar -rv go_sim.lib get_surface_pot.og
+ar -rv go_sim.lib calc_w_rg.og
+ar -rv go_sim.lib get_initial_coordinates.og
+ar -rv go_sim.lib line_config.og
+ar -rv go_sim.lib get_ip1_ip2.og
+ar -rv go_sim.lib sort_set.og
+ar -rv go_sim.lib vafm.og
+ar -rv go_sim.lib get_zmin.og
+ar -rv go_sim.lib get_eij.og
+ar -rv go_sim.lib get_nz.og
+ar -rv go_sim.lib evalsurf.og
+ar -rv go_sim.lib kmt.og
+ar -rv go_sim.lib get_add_bonds.og
+ar -rv go_sim.lib get_knot_number.og
+ar -rv go_sim.lib get_knot_limits.og
+ar -rv go_sim.lib afm.og
+ar -rv go_sim.lib get_add_contacts.og
+ar -rv go_sim.lib make_contact_map2.og
+ar -rv go_sim.lib get_rem_contacts.og
+ar -rv go_sim.lib get_add_bonds_numb.og
+ar -rv go_sim.lib read_contact_map.og
+ar -rv go_sim.lib get_nc.og
+
+#ar -rv go_sim.lib evalwall_ZnO.og
+#ar -rv go_sim.lib evalwall_Au.og
+
+rm get_nres.og
+rm get_nres2.og
+rm assign_vdw_radii.og
+rm make_contact_map.og
+rm read_all_atom.og
+rm get_c_alpha_coordinates.og
+rm ran2.og
+rm main_loop_th.og
+rm main_loop_su.og
+rm main_loop_folding.og
+rm main_loop_pulling.og
+rm gopotential612.og
+rm evalgo612.og
+rm evalgo612shift.og
+rm evalgo1012.og
+rm evalgo61012.og
+rm model_chirality.og
+rm eval_chirality.og
+rm update_vlist.og
+rm write_pdb.og
+rm write_pdb_z.og
+rm gyration.og
+rm brown_dyn.og
+rm leapfrog_dyn.og
+rm compute_rmsd.og
+rm eigsrt.og
+rm jacobi.og
+rm kabsch.og
+rm norma.og
+rm pvector.og
+rm get_chains.og
+rm contact_fluct.og
+rm get_ss_bonds.og
+rm corr.og
+rm predct.og
+rm langvin.og
+rm intvel3d.og
+rm get_nat_angles.og
+rm eval_angles.og
+rm force_torsion.og
+rm force_bending.og
+rm center.og
+rm get_surface_pot.og
+rm calc_w_rg.og
+rm get_initial_coordinates.og
+rm line_config.og
+rm get_ip1_ip2.og
+rm sort_set.og
+rm vafm.og
+rm get_zmin.og
+rm get_eij.og
+rm get_nz.og
+rm evalsurf.og
+rm kmt.og
+rm get_add_bonds.og
+rm get_knot_number.og
+rm get_knot_limits.og
+rm afm.og
+rm get_add_contacts.og
+rm make_contact_map2.og
+rm get_rem_contacts.og
+rm get_add_bonds_numb.og
+rm read_contact_map.og
+rm get_nc.og
+
+#rm evalwall_ZnO.og
+#rm evalwall_Au.og
+
+gfortran go_sim.f go_sim.lib -o go_sim.xg
