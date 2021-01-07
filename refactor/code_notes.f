@@ -6395,14 +6395,14 @@ C THIS SUBROUTINE PRINTS THE ORIGINAL CONTACT MAP FILE
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
         
 c     write(iun,*) "# total chain length",men
-      write(iun,'(a,i9)') '# number of contacts',klont
+      write(iun,'(a,i9)') '# number of contacts',klont ! write number of residues in contact
       write(iun,'(a,i7)') ' time i j nr type Ri Rj r, length = ',men
       do i=1,klont
           sigrang=sont(i)*c216
           ib1=klist(1,i)
           ib2=klist(2,i)
-          write(iun,'(a,i9,2i5,i9,i3,x,a,x,a,f7.3)')"K",ktime,ib1,ib2,
-     +        ib1*men+ib2,klist(3,i),aseq(ib1),aseq(ib2),sigrang*unit
+          write(iun,'(a,i9,2i5,i9,i3,x,a,x,a,f7.3)')"K",ktime,ib1,ib2, ! write  contact time of residueas,
+     +        ib1*men+ib2,klist(3,i),aseq(ib1),aseq(ib2),sigrang*unit  ! inter-chain conntact between them and their names
       enddo
       
       do i=1,men
@@ -6525,9 +6525,9 @@ c     write(iun,*) "# total chain length",men
          endif
       enddo
       
-      write(iun,'(a,i9)') '# number of contacts',ncnt
-      write(iun,'(5(a,f9.4))')'bbij ',bckbmin,' sdchnmax^2 ',sdchnmax,
-     +     ' ssPID ',psi0ss,' bbPID1 ',psi0bb(1),' bbPID2 ',psi0bb(2)
+      write(iun,'(a,i9)') '# number of contacts',ncnt 
+      write(iun,'(5(a,f9.4))')'bbij ',bckbmin,' sdchnmax^2 ',sdchnmax, ! write minimum value of backbone angle, maximum of sidechain angle
+     +     ' ssPID ',psi0ss,' bbPID1 ',psi0bb(1),' bbPID2 ',psi0bb(2)  ! angle minimum of the 1st BB pid potential
       write(iun,'(2a)')'         time i j nr type Ri Rj r bbir bbjr ',
      +     'bbij sdchni^2 sdchnj^2 conttype'
       do i=1,ncnt
@@ -6739,7 +6739,7 @@ C THIS SUBROUTINE PRINTS THE CHAIN COORDINATES IN XYZ FORMAT
       iatom=0
       do 1000 ib=1,men
 c     write(iun,'(3f12.5)')x0(ib)*unit,y0(ib)*unit,z0(ib)*unit
-      write(iun,'(3f9.3)')x0(ib)*unit,y0(ib)*unit,z0(ib)*unit
+      write(iun,'(3f9.3)')x0(ib)*unit,y0(ib)*unit,z0(ib)*unit ! write chain coordinates
 1000  continue
       return
       end
@@ -6770,22 +6770,22 @@ C THIS SUBROUTINE PRINTS THE RESTART FILE
       write(rstfile,stafile) filname,itraj,nint(time),'.rst'
       open(21,file=rstfile,status='unknown')
       write(21,'(2f18.3)')time,work
-      write(21,'(8f14.6)')zup,zdown,yup,ydown,xup,xdown,sep0,shear
-      write(21,'(7i10)')(kbwal(i),i=1,8)
-      write(21,'(2i8)')intrsc,intesc
+      write(21,'(8f14.6)')zup,zdown,yup,ydown,xup,xdown,sep0,shear ! write coordinates
+      write(21,'(7i10)')(kbwal(i),i=1,8) ! write time counters in different situations
+      write(21,'(2i8)')intrsc,intesc ! write respectively number of INTRACHAIN and INTERCHAIN disulfide bonds
       do i=1,men
-          if(l3rdcn(i)) write(21,*) i,knct3rd(i)
+          if(l3rdcn(i)) write(21,*) i,knct3rd(i) ! write index of residue that is bonded to i
       enddo
-      write(21,*)(ksorted(i),i=1,men)
-      write(21,*)(xpul(i),ypul(i),zpul(i),i=1,men)
-      write(21,*)(x0(i),y0(i),z0(i),i=1,men)
+      write(21,*)(ksorted(i),i=1,men) ! write indexes to be sorted
+      write(21,*)(xpul(i),ypul(i),zpul(i),i=1,men) ! write ref. values of pulled resid.
+      write(21,*)(x0(i),y0(i),z0(i),i=1,men) ! write actual coordinates
       write(21,*)(x1(i),y1(i),z1(i),i=1,men)
-      write(21,*)icnss,icdss,ip1,ip2
+      write(21,*)icnss,icdss,ip1,ip2 ! write respectively number of NATIVE and NON-NATIVE disulfide bonds
       if(lwal) then
-          write(21,*)(ipw(1,i),i=1,men)
+          write(21,*)(ipw(1,i),i=1,men) ! write RES. sticked to wall
           write(21,*)(ipw(2,i),i=1,men)
       endif
-      write(21,*)kbperiod
+      write(21,*)kbperiod ! write number of oscillation cycle
       close(21)
       
       return
