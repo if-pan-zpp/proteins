@@ -7436,6 +7436,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
       dimension nb(len)
 
+      ! vrad(i) stores the VdW radii for all atoms of the amino-acid
+      ! at the i-th position in the chain.
+      ! (without hydrogen atoms and one oxygen atom in the carboxyl group).
+      ! Carbon gets different radii depending on its neighbours.
+      ! The order seems to be the same as in PDB files.
+
       do 1000 ib=1,men
          vrad(ib,1)=1.64        ! BACKBONE NITROGEN
          vrad(ib,2)=1.88        ! BACKBONE C-ALPHA
@@ -7460,7 +7466,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          else if(ares.eq.'CYS') then
             nb(ib)=6
             vrad(ib,5)=1.88
-            vrad(ib,6)=1.77
+            vrad(ib,6)=1.77 ! sulfur
          else if(ares.eq.'VAL') then
             nb(ib)=7
             vrad(ib,5)=1.88

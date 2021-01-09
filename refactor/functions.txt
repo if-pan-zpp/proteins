@@ -1,0 +1,68 @@
+SIMULATION:
+	prepare			Simple	A function called before each step. Zeroes a lot of variables
+					and recalculates many auxilary variables, like 'v' or 'vxv'.
+	eval_chirality		Simple	Computes the energy and forces arising from chirality potential.
+	predct 			VSimple Predictor step from the predictor-corrector method.
+	corr			VSimple Corrector step from the predictor-corrector method.
+
+MATH:
+	dihedral		Simple	Calculates dihedral angle (for a given set of 4 vectors).
+	bondangle		VSimple Calculates the bond angle (for a given set of 4 vectors).
+	countpid 		Simple  Computes phi (angle used in PID) for a given pair of residues.
+					Used only in 'print_map' -> 'compute_details'.
+	norma			VSimple Takes a 3x3 matrix and normalizes its columns. Used only in kabsch.
+	ran2 			Simple	Random number generator.
+	
+			
+
+INPUT:  Every function here is called at most once and before the main loop starts.
+
+	compute_native_angles	VSimple Computes dihedral and bond angles for native conformation.
+	gopotential 		Simple 	If 'lpdb' is true, it calculates the sigmas of L-J potential
+					for all contacts (the meaning of sigmas - p. 9 in the paper).
+	model_chirality 	VSimple	Calculates the chiralities for the native structure.
+	amino_acid_mass		VSimple Computes masses of residues relative to the mass
+					of the entire protein. 		
+
+	compute_contact_map 	Medium 	Computes native contacts from a PDB file based on the positions
+					of individual atoms in the amino-acids.
+	compute_cmap 		Simple  Simpler alternative to 'compute_contact_map'. It defines a contact
+					between residues by the cut-off on the distance between C-alpha atoms.
+	assign_VdW_radius 	Medium 	Part of 'compute_contact_map'. It assigns the Van der Waals radius
+					to all atoms in the amino-acids in the chains. Also performs some
+					checks.
+	load_allatom		Simple	Part of 'compute_contact_map'. Given the PDB file, it reads
+					the native positions of atoms in the protein.
+	load_protein 		Hard 	Loads the native conformation and SS bonds from the PDB file. 
+					Big part of it runs only when 'lunwrap' is true
+					(unwrapping coordinates arising from periodic boundary conditions).
+	load_cmap		VSimple	Loads native contacts directly from a .map file (also dihedral
+					and bond angles).
+	displace 		Simple  Displaces one specified pair of chains away from each other
+					by a given distance.
+	
+
+STATISTICS:
+	gyration		VSimple	Computes radius of gyration of the protein, which is the
+					standard deviation of distances from residues to the center of mass.
+	cgyration		Medium	Computes various statistics - the radii of gyration for all chains,
+					also W (asphericity parameter), whatever that is.
+	
+
+OUTPUT:
+	print_restart		VSimple	Prints the restart file.
+	print_conf_xyz		VSimple Prints the conformation in the XYZ format.
+	print_cmap		VSimple	If 'lwritego' is true, no simulations are performed and this
+					function prints the contact map.
+
+WALLS:
+	connect_to_wal_one_by_o	???	???
+	connect_to_wal		???	???
+	make_fcc		Simple	Creates a 2-layer, triangular lattice of beads that form a wall.
+
+OTHER:
+	angeval			Medium	Maybe the older version of evalangles.
+	build_titin 		Simple 	Used for building titin - a very large protein composed
+					of many protein domains.
+	interdomain 		Simple	Next step for building titin, disables contacts between
+					different domains of titin.
