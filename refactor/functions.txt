@@ -4,6 +4,22 @@ SIMULATION:
 	eval_chirality		Simple	Computes the energy and forces arising from chirality potential.
 	predct 			VSimple Predictor step from the predictor-corrector method.
 	corr			VSimple Corrector step from the predictor-corrector method.
+	update_verlet_list	Hard	Updates the verlet list, but it's hard to say
+					what actually is updated there.
+	lang			VSimple	Adds langevin noise and damping
+					(which simulates the effect of implicint solvent).
+	lang_mass		VSimple	Same as lang, but accounts for different masses of residues.
+	evalgo			Hard	Computes the energy and force of the Go model.
+					The interactions include:
+					    - harmonic between residues i and i + 1
+					    - standard L-J between native contacts
+					    - repulsive L-J between residues i and i + 2
+					    - repulsive L-J between residues that aren't in
+					      a native contact but are close to each other.
+					    - some weird stuff with ss bonds.
+
+	evalcpot 		Hard	???
+		
 
 MATH:
 	dihedral		Simple	Calculates dihedral angle (for a given set of 4 vectors).
@@ -12,7 +28,9 @@ MATH:
 					Used only in 'print_map' -> 'compute_details'.
 	norma			VSimple Takes a 3x3 matrix and normalizes its columns. Used only in kabsch.
 	ran2 			Simple	Random number generator.
-	
+	jacobi			Medium	Given a 3x3 symmetric matrix it finds its eigen(values|vectors).
+	eigsrt			VSimple	Given the output of jacobi it sorts eigenvectors in descending
+					order by their lengths.
 			
 
 INPUT:  Every function here is called at most once and before the main loop starts.
