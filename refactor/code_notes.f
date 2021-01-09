@@ -6175,6 +6175,11 @@ c     print *,(qkk(i,k),k=1,3)  ! serve per scrivere le coordinate
       return
       end
 
+      ! Given a symmetric matrix 'a' it uses jacobi method
+      ! to find eigenvalues - array d
+      ! and normalized eigenvectors - array v
+      ! nrot is the number of steps it took to converge.
+      ! It's used only in 3x3 case.
       SUBROUTINE jacobi(a,n,np,d,v,nrot)
       INTEGER n,np,nrot,NMAX
       real*8 a(np,np),d(np),v(np,np)
@@ -6271,6 +6276,10 @@ c     print *,(qkk(i,k),k=1,3)  ! serve per scrivere le coordinate
       END
 C  (C) Copr. 1986-92 Numerical Recipes Software W"..
 
+      ! This is only called after calling 'jacobi'.
+      ! It sorts array d in descending order using insertion sort 
+      ! and permutes columns of v accordingly. 
+      ! Columns of v are eigenvectors and d stores their lengths.
       SUBROUTINE eigsrt(d,v,n,np)
       INTEGER n,np
       real*8 d(np),v(np,np)
