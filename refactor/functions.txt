@@ -19,6 +19,8 @@ SIMULATION:
 					    - some weird stuff with ss bonds.
 
 	evalcpot 		Hard	???
+	evalangles 		Hard 	Computes the energy and force related
+					to bond (i-1, i, i+1) and dihedral (i-2, i-1, i, i+1) angles.
 		
 
 MATH:
@@ -64,8 +66,9 @@ STATISTICS:
 	gyration		VSimple	Computes radius of gyration of the protein, which is the
 					standard deviation of distances from residues to the center of mass.
 	cgyration		Medium	Computes various statistics - the radii of gyration for all chains,
-					also W (asphericity parameter), whatever that is.
-	
+					also W (asphericity parameter, whatever that is). Also finds knots.
+	kmt			Hard	Used only in 'cgyration'. Finds the beginning and end of a knot
+					in a chain. Possibly some knot theory is needed to understand it.
 
 OUTPUT:
 	print_restart		VSimple	Prints the restart file.
@@ -84,3 +87,5 @@ OTHER:
 					of many protein domains.
 	interdomain 		Simple	Next step for building titin, disables contacts between
 					different domains of titin.
+	sort/sort2		VSimple	Just a quicksort (sort2 applies the same permutation to
+					a second array).

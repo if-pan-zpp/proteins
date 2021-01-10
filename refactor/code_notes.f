@@ -6309,6 +6309,7 @@ C  (C) Copr. 1986-92 Numerical Recipes Software W"..
 C  (C) Copr. 1986-92 Numerical Recipes Software W"..
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+      ! Runs Quicksort on the array 'arr' of length 'n'.
       SUBROUTINE sort(n,arr)
       implicit double precision (a-h,o-z)
       INTEGER n,M,NSTACK        !    from "Numerical Recipes"
@@ -8353,6 +8354,8 @@ C THIS SUBROUTINE RETURN THE DIHEDRAL ANGLE AT THE THIRD SITE
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+      ! Runs Quicksort on the array 'arr' of length 'n'.
+      ! Applies the same permutation to 'ibarr'.
       SUBROUTINE sort2(n,arr,ibarr)
       implicit double precision(a-h,o-z)
       INTEGER n,M,NSTACK        !    from "Numerical Recipes"
