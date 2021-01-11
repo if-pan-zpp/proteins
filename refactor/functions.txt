@@ -18,9 +18,15 @@ SIMULATION:
 					      a native contact but are close to each other.
 					    - some weird stuff with ss bonds.
 
-	evalcpot 		Hard	???
+	evalcpot 		Hard	Calculates energy and force of the custom potential (???)
+	evalimproper 		Medium	Calculates energy and force of the PID potential.
 	evalangles 		Hard 	Computes the energy and force related
 					to bond (i-1, i, i+1) and dihedral (i-2, i-1, i, i+1) angles.
+	evalwall		Medium	Computes the energy and forces related to wall interactions.
+	afm			Simple	Applies constant AFM force on the first and last residue.
+	vafm 			Medium	Applies AFM force on the first and last residue by simulating
+					a harmonic spring that moves with constant velocity.
+					But also does some logic with walls (???)
 		
 
 MATH:
@@ -29,6 +35,7 @@ MATH:
 	countpid 		Simple  Computes phi (angle used in PID) for a given pair of residues.
 					Used only in 'print_map' -> 'compute_details'.
 	norma			VSimple Takes a 3x3 matrix and normalizes its columns. Used only in kabsch.
+	pvector			VSimple	Given two 3D vectors, calculates cross product and its norm.
 	ran2 			Simple	Random number generator.
 	jacobi			Medium	Given a 3x3 symmetric matrix it finds its eigen(values|vectors).
 	eigsrt			VSimple	Given the output of jacobi it sorts eigenvectors in descending
@@ -60,21 +67,35 @@ INPUT:  Every function here is called at most once and before the main loop star
 					and bond angles).
 	displace 		Simple  Displaces one specified pair of chains away from each other
 					by a given distance.
-	
+	confstart 		Medium	Generates the starting conformation (it's supposed to be
+					a self-avoiding random walk).
+	load_sequence		Simple	Loads a sequence of amino acids to simulate (for disordered proteins).
+	load_paramfile		Simple	Loads various parameters from 'paramfile' (example3 has 'parameters.txt').
 
 STATISTICS:
 	gyration		VSimple	Computes radius of gyration of the protein, which is the
 					standard deviation of distances from residues to the center of mass.
+	intvel3d 		Simple	Assigns initial velocities to the pseudoatoms.
 	cgyration		Medium	Computes various statistics - the radii of gyration for all chains,
 					also W (asphericity parameter, whatever that is). Also finds knots.
 	kmt			Hard	Used only in 'cgyration'. Finds the beginning and end of a knot
 					in a chain. Possibly some knot theory is needed to understand it.
+	kabsch			Medium	Given two sequences of 3D vectors of equal length, finds a rotation
+					+ translation that minimizes the root mean sqared deviation between
+					them. See 'Kabsch algorithm' on Wikipedia.
+	compute_rmsd		VSimple	Calls 'kabsch' on the positions of residues after simulation ends
+					and their original positions.
 
 OUTPUT:
 	print_restart		VSimple	Prints the restart file.
+	print_conformation	Medium	Prints the conformation in the PDB format.	
 	print_conf_xyz		VSimple Prints the conformation in the XYZ format.
 	print_cmap		VSimple	If 'lwritego' is true, no simulations are performed and this
 					function prints the contact map.
+	print_map		Medium	Prints a contact map file that contains all the contacts after
+					the simulation (optionally adds some details about angles).
+	compute_details		Simple	Given two residues, computes some angles between them.
+					Used in 'print_map' when 'ldet' is true.
 
 WALLS:
 	connect_to_wal_one_by_o	???	???
@@ -89,3 +110,4 @@ OTHER:
 					different domains of titin.
 	sort/sort2		VSimple	Just a quicksort (sort2 applies the same permutation to
 					a second array).
+	compute_ssbonds		Simple	Never called. Probably obsolete.
