@@ -14,7 +14,7 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Analysis of the main/global code" href="main.html" />
+    <link rel="next" title="Main/global code" href="main.html" />
     <link rel="prev" title="Project overview" href="../project/index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -36,12 +36,10 @@
 <h1>Code analysis<a class="headerlink" href="#code-analysis" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="sources">
 <h2>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h2>
-<p>The goal is to replicate (whilst possibly fixing bugs, if any are found) the program
-originally written in Fortran 77 language. More specifically, given were:</p>
+<p>The goal is to replicate (whilst possibly fixing bugs, if any are found) the program originally written in Fortran 77 language. More specifically, given were:</p>
 <ul class="simple">
 <li><p>the source code, in the form of a single file <code class="docutils literal notranslate"><span class="pre">cg.f</span></code> spanning 8.3k LOC;</p></li>
-<li><p>input parameters (<code class="docutils literal notranslate"><span class="pre">parameters.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMD05.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMDCG.txt</span></code>,
-<code class="docutils literal notranslate"><span class="pre">parametersMJ96.txt</span></code>) in a custom format;</p></li>
+<li><p>input parameters (<code class="docutils literal notranslate"><span class="pre">parameters.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMD05.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMDCG.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMJ96.txt</span></code>) in a custom format;</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">README.txt</span></code> file, which in particular contains:</p>
 <ul>
 <li><p>compilation instructions;</p></li>
@@ -57,28 +55,32 @@ originally written in Fortran 77 language. More specifically, given were:</p>
 <li><p>simulation of gluten;</p></li>
 </ul>
 </li>
-<li><p>a research paper <code class="docutils literal notranslate"><span class="pre">CPC14.pdf</span></code> providing the high-level description of the
-underlying model.</p></li>
+<li><p>a research paper <code class="docutils literal notranslate"><span class="pre">CPC14.pdf</span></code> providing the high-level description of the underlying model.</p></li>
 </ul>
 <div class="section" id="fortran-95-sources">
 <h3>Fortran 95 sources<a class="headerlink" href="#fortran-95-sources" title="Permalink to this headline">¶</a></h3>
-<p>Later in development, we acquired an incomplete reimplementation of Fortran 77
-program in Fortran 95. The extent to which this implementation is helpful is
-unclear.</p>
+<p>Later in development, we acquired an incomplete reimplementation of Fortran 77 program in Fortran 95. The extent to which this implementation is helpful is unclear.</p>
 </div>
 </div>
 <div class="section" id="incremental-design-and-code-coverage">
 <h2>Incremental design and code coverage<a class="headerlink" href="#incremental-design-and-code-coverage" title="Permalink to this headline">¶</a></h2>
-<p>We have elected to provide documentation and implementation of only inasmuch
-of the source code as to be capable of implementing consecutive examples. To
-facilitate it, we used an external program to determine which parts of the code
-are used for each example.</p>
+<p>We have elected to provide documentation and implementation of only inasmuch of the source code as to be capable of implementing consecutive examples. To facilitate it, we used an external program to determine which parts of the code are used for each example.</p>
 </div>
 <div class="section" id="fortran-77-source-code-documentation">
 <h2>Fortran 77 source code documentation<a class="headerlink" href="#fortran-77-source-code-documentation" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="main.html">Analysis of the main/global code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="main.html">Main/global code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#simulation">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#math">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#input">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#stats">Stats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#output">Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#walls">Walls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#other">Other</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -116,7 +118,7 @@ are used for each example.</p>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
       <li>Previous: <a href="../project/index.html" title="previous chapter">Project overview</a></li>
-      <li>Next: <a href="main.html" title="next chapter">Analysis of the main/global code</a></li>
+      <li>Next: <a href="main.html" title="next chapter">Main/global code</a></li>
   </ul></li>
 </ul>
 </div>
