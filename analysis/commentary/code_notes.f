@@ -4265,17 +4265,24 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
       kactual = 1
       kqactual = 1
       kfactual = 1
+
+      ! kqist and kfcc have two versions,
+      ! jq is the index of a new one, jq2 is the index of the old one
       jq2=jq
       jq=3-jq                   ! if jq was 2, it is 1, if it was 1, it is 2
+
       cutoff=verlcut+rcut
       cutoff2=cutoff**2
       smallcutoff=verlcut+cut
       smcut2=smallcutoff**2
       
       do ib=1,men
+         ! Saving old positions of residues, they are used to know
+         ! when 'update_verlet_list' needs to be called again.
          oxv(1,ib)=x0(ib)
          oxv(2,ib)=y0(ib)
          oxv(3,ib)=z0(ib)
+
          if(lfcc) then
             if(z0(ib)-zdown.lt.cutoff) then
                xi=x0(ib)
@@ -4348,9 +4355,15 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
       endif
       
       ic=2
+
+      ! This loop goes through all pairs of residues i < j, it skips  
+      ! pairs that are neighbours or second neighbours, because those interactions
+      ! are handled separately.
       do i=1,men
          if(i.gt.menchain(ic)) ic=ic+1
          
+         ! kdist is the first residue on the right of i-th residue
+         ! that is not its first or second neighbour
          if(lconect(i).and.lconect(i+1)) then
             kdist=i+3
          else if(lconect(i)) then
@@ -4358,10 +4371,12 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
          else
             kdist=i+1
          endif
+
          do j=kdist,men
-            lsamechain=j.le.menchain(ic)
-            lendchn=j.eq.i+1
-            if(i.lt.nen1 .and. j.lt.nen1) goto 1129
+            lsamechain=j.le.menchain(ic) ! true iff i and j are in the same chain
+            lendchn=j.eq.i+1 ! true iff i is the end of a chain and j the start of next chain 
+            if(i.lt.nen1 .and. j.lt.nen1) goto 1129 ! frozen residues, skip
+
             xi=x0(i)
             yi=y0(i)
             zi=z0(i)
@@ -4372,8 +4387,16 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             if(lpbcy) dy = dy-ysep*nint(dy*yinv)
             if(lpbcz) dz = dz-zsep*nint(dz*zinv)
             rsq=dx*dx+dy*dy+dz*dz
+           
+            ! if rsq > cutoff2 then this pair of residues will not interact in any way
+            ! until the next update_verlet_list is called. Skip them.
             if(rsq.lt.cutoff2) then
  9797          continue
+
+               ! This ensures that we notice native contacts, ASSUMING that klist
+               ! holds them in lexicographical order. We traverse (i, j) in the same order, 
+               ! so it's enough to keep 'kactual' which points to the last native contact
+               ! not greater than (i, j). 
                if(kactual.le.klont) then ! find native contacts
                   k1=klist(1,kactual)
                   k2=klist(2,kactual)
@@ -4389,6 +4412,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                      goto 1129
                   endif
                endif
+
 !     3579 is the label for "the rest" of contacts
                if(lendchn) goto 3579
                iname1=inameseq(i)
