@@ -3498,6 +3498,8 @@ c     chirality count does not include the gap
       do 495 i=1,men-1
          if(lconect(i)) then    ! lconect is true if i and i+1 are connected
             j=i+1               ! contacts between neighbour residues
+
+            ! INT_3: Harmonic tethering between (i, i+1) within one chain.
             xi=x0(i)
             yi=y0(i)
             zi=z0(i)
@@ -3525,6 +3527,7 @@ c     chirality count does not include the gap
             fz(i) = fz(i) + repz
             fz(j) = fz(j) - repz
             epot=epot+ene
+
             if(lconect(j)) then ! i,i+2 contacts purely repulsive
                j=i+2
                dx = xi-x0(j)
@@ -3928,7 +3931,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          x1(i)=x1(i)+const2*gam
+
+         ! INT_1: Damping.
          fx(i)=fx(i)-gamma2*x1(i)
  10   continue
 
@@ -3937,7 +3944,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          y1(i)=y1(i)+const2*gam
+
+         ! INT_1: Damping.
          fy(i)=fy(i)-gamma2*y1(i)
  20   continue
 
@@ -3946,7 +3957,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          z1(i)=z1(i)+const2*gam
+
+         ! INT_1: Damping.
          fz(i)=fz(i)-gamma2*z1(i)
  30   continue
 
@@ -3964,6 +3979,8 @@ C     THE LANGEVIN NOISE WHICH TAKES INTO ACCOUNT THE MASSES OF A.A.
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
 
       do 10 i=nen1,men
+         ! INT_1: Damping.
+         ! INT_2: Thermal noise.
          con2=const2/rsqmas(i)
          gam2=gamma2/rmas(i)
          r1=ran2(0)
@@ -4348,6 +4365,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             endif
          endif
       enddo
+
       if((lpbcx.and.xsep.lt.0.001).or.(lpbcy.and.ysep.lt.0.001)
      +     .or.(lpbcz.and.zsep.lt.0.001)) then
          write(1,*) 'BROKEN PBC. PLS CHECK!' 
@@ -4377,6 +4395,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             lendchn=j.eq.i+1 ! true iff i is the end of a chain and j the start of next chain 
             if(i.lt.nen1 .and. j.lt.nen1) goto 1129 ! frozen residues, skip
 
+            ! Calculating the distance between i and j
             xi=x0(i)
             yi=y0(i)
             zi=z0(i)
@@ -4391,12 +4410,12 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             ! if rsq > cutoff2 then this pair of residues will not interact in any way
             ! until the next update_verlet_list is called. Skip them.
             if(rsq.lt.cutoff2) then
- 9797          continue
 
                ! This ensures that we notice native contacts, ASSUMING that klist
                ! holds them in lexicographical order. We traverse (i, j) in the same order, 
-               ! so it's enough to keep 'kactual' which points to the last native contact
+               ! so it's enough to keep 'kactual' that points to the last native contact
                ! not greater than (i, j). 
+ 9797          continue
                if(kactual.le.klont) then ! find native contacts
                   k1=klist(1,kactual)
                   k2=klist(2,kactual)
@@ -4413,16 +4432,25 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                   endif
                endif
 
-!     3579 is the label for "the rest" of contacts
+               ! 3579 is the label for "the rest" of contacts
                if(lendchn) goto 3579
-               iname1=inameseq(i)
-               iname2=inameseq(j)
+
                if(lsamechain) then ! 3580 skips electrostatics
                   if(.not.lcintr) goto 3580
                   if(abs(j-i).eq.4 .and. .not. lii4) goto 3579
                endif
+               
+               iname1=inameseq(i)
+               iname2=inameseq(j)
                if(iname1.eq.4 .and.iname2.eq.4 .and.lmrs) goto 3579
-               if(lpid) goto 9696 !no need 2 keep kqist for pid
+
+
+               ! This ensures that we notice contacts that were already in the old kqist.
+               ! It works in the same way as noticing native contacts above.
+               ! We need to do this, because when using quasi-adiabatic potential
+               ! we need to be able to turn interactions on and off adiabatically
+               ! which requires us to remember old contacts' state. 
+               if(lpid) goto 9696 !no need to do it for pid, because contacts don't have a state
  9898          continue
                if(kqactual.le.kqont2) then ! find non-native c.
                   kq1=kqist(1,kqactual,jq2)
@@ -4441,8 +4469,9 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                      goto 1129
                   endif
                endif
+
+               ! Store this new non-native contact in kqist.
  9696          continue
-!     make a new non-native contact
                kqont=kqont+1
                kqist(1,kqont,jq)=i
                kqist(2,kqont,jq)=j
@@ -4452,13 +4481,16 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                else
                   kqist(4,kqont,jq)=-1
                endif
+
+               ! Everything below is run only if lpid is true.
                if(lpid) then
-                  kqist(4,kqont,jq)=kqist(4,kqont,jq)
-     $                 *(iname1*21+iname2)
-                  if(lepid) goto 3580
+                  kqist(4,kqont,jq)=kqist(4,kqont,jq)*(iname1*21+iname2)
+
+                  if(lepid) goto 3580 !skip electrostatics, since 'evalimproper' will handle them
                else
                   goto 1129     ! TODO check if it works for lpid
                endif
+
 !     electrostatic, disulfide or repulsive contacts
  3579          continue
                if(.not.lcpot) goto 3581 !skip ssbond and electr
@@ -4477,7 +4509,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                   kcont=kcont+1
                   kcist(1,kcont)=i
                   kcist(2,kcont)=j
-                  kcist(3,kcont)=-2 ! nonnative SSbond
+                  kcist(3,kcont)=-2 ! nonnative SSbond (with Morse potential)
                   if(lsamechain) kcist(3,kcont)=-3
                   goto 1129
                endif
@@ -4843,7 +4875,9 @@ C     THIS SUBROUTINE COMPUTES DETAILS OF INTER-RESIDUE ANGLES
       end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+ 
+      ! THIS FUNCTION IS PROBABLY OBSOLETE AND THE COMMENTS HERE HAVE BEEN MISLEADING
+      
 C     THIS SUBROUTINE COMPUTES SS-BONDS WITHIN GO-MODEL
       subroutine compute_ssbonds()
       implicit double precision(a-h,o-z)
@@ -4980,6 +5014,9 @@ C     THIS SUBROUTINE READS THE NATIVE COUPLINGS WITHIN GO-MODEL FROM FILE
          write(*,*)'PROGRAM STOPPED.'
          stop
       endif
+      ! WARNING. Probably this function is a bit obsolete, because the .map files have
+      ! "shift of the reading frame" in the first line, which is not read here.
+      ! Compare this with the code that does exact same thing in 'load_sequence'. 
       read(98,*) icn
       read(98,*) men
       do i=1,icn
@@ -7349,24 +7386,30 @@ C CHIRALITY POTENTIALS
 
       enechi=0.d0
       do 3000 ib=1,men-3
+         ! Here we probably should also check if lconect(ib + 2) is true.
          if(lconect(ib) .and. lconect(ib+1)) then
             chira=chir(ib)
             if(chira*chirn(ib).gt.0.d0) goto 3000
             ib1=ib+1
             ib2=ib+2
             ib3=ib+3
-!     COMPUTE THE ENERGY
+
+            ! INT_4: Chirality potential.
+            
+            ! COMPUTE THE ENERGY
+            ! There is a bug here, we should take (chira - chirn(ib))**2 instead of chira**2
+            ! See implementation in F95/eval_chirality.f
             enechi=enechi+echi*chira*chira/2.d0
-!     COMPUTE THE FORCE
+            ! COMPUTE THE FORCE
             fchi=-echi*chira/bond**3
-!     FIRST RESIDUE
+            ! FIRST RESIDUE
             repx=ys(ib2)*zs(ib1)-zs(ib2)*ys(ib1)
             repy=zs(ib2)*xs(ib1)-xs(ib2)*zs(ib1)
             repz=xs(ib2)*ys(ib1)-ys(ib2)*xs(ib1)
             fx(ib)=fx(ib)+fchi*repx
             fy(ib)=fy(ib)+fchi*repy
             fz(ib)=fz(ib)+fchi*repz
-!     SECOND RESIDUE
+            ! SECOND RESIDUE
             xa=xs(ib)+xs(ib1)
             ya=ys(ib)+ys(ib1)
             za=zs(ib)+zs(ib1)
@@ -7376,7 +7419,7 @@ C CHIRALITY POTENTIALS
             fx(ib1)=fx(ib1)+fchi*repx
             fy(ib1)=fy(ib1)+fchi*repy
             fz(ib1)=fz(ib1)+fchi*repz
-!     THIRD RESIDUE
+            ! THIRD RESIDUE
             xa=xs(ib1)+xs(ib2)
             ya=ys(ib1)+ys(ib2)
             za=zs(ib1)+zs(ib2)
@@ -7386,7 +7429,7 @@ C CHIRALITY POTENTIALS
             fx(ib2)=fx(ib2)+fchi*repx
             fy(ib2)=fy(ib2)+fchi*repy
             fz(ib2)=fz(ib2)+fchi*repz
-!     FOURTH RESIDUE
+            ! FOURTH RESIDUE
             repx=ys(ib)*zs(ib1)-zs(ib)*ys(ib1)
             repy=zs(ib)*xs(ib1)-xs(ib)*zs(ib1)
             repz=xs(ib)*ys(ib1)-ys(ib)*xs(ib1)
@@ -8138,7 +8181,9 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
 !     COMPUTING POTENTIAL-DEPENDENT PART
             thetemp(ib)=theta
             if(langle) then
+
                if(lfrompdb(ib-1).and.lfrompdb(ib+1)) then
+                  ! INT_5: Bond angle (structured)
                   theta=theta-the0(ib)
                   ene=CBA*theta*theta
                   dvdp=2.d0*CBA*theta
@@ -8146,6 +8191,7 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
                   j=min(inameseq(ib),3)
                   k=min(inameseq(ib+1),3)
                   if (lenetab) then ! tabularized potential
+                     ! INT_6: Bond angle (unstructured, tabularized)
                      xx=theta/pp ! xx - theta in 0.01 degree units
                      ixx=INT(xx) ! ixx - number of the table row
                      xi=xx-ixx  ! xi - fractional part to interpolate
@@ -8154,6 +8200,7 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
                      aa=tene(ixx,j,k,2)
                      dvdp=(aa+xi*(tene(ixx+1,j,k,2)-aa))/pp/(-660)
                   else          ! polynomial potential
+                     ! INT_7: Bond angle (unstructured, statistical)
                      theta2=theta*theta
                      theta3=theta2*theta
                      theta4=theta3*theta
@@ -8167,6 +8214,8 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
      +                    +angpot(13,j,k)*theta4+angpot(14,j,k)*theta5
                   endif
                endif
+
+               ! INT_5, INT_6, INT_7. See the block above.
                epot=epot+ene
                fx(i1)=fx(i1)-dvdp*fi(1)
                fy(i1)=fy(i1)-dvdp*fi(2)
@@ -8254,51 +8303,54 @@ C     J. COMPUT. CHEM., 16: 527-533. DOI: 10.1002/JCC.540160502
 !     CALCULATING PART DEPENDENT ON POTENTIAL
             phitemp(ib)=phi
             if(langle.and.ldi) then
-               if(lfrompdb(ib-2)
-     $              .and.lfrompdb(ib+1).and..not.lcoildih) then
-               phi=phi-phi0(ib)
-               if(ldisimp) then
-                  ene=0.5*CDH*phi*phi
-                  dvdp=-CDH*phi
+               if(lfrompdb(ib-2).and.lfrompdb(ib+1).and..not.lcoildih)
+     $              then
+                  phi=phi-phi0(ib)
+                  if(ldisimp) then
+                     ! INT_8: Dihedral angle (structured, harmonic)
+                     ene=0.5*CDH*phi*phi
+                     dvdp=-CDH*phi
+                  else
+                     ! INT_9: Dihedral angle (structured, non-harmonic)
+                     ene=CDA*(1.d0-dcos(phi))+CDB*(1.d0-dcos(3.d0*phi))
+                     dvdp=CDA*sin(phi)+3.d0*CDB*sin(3.d0*phi)
+                  endif
                else
-                  ene=CDA*(1.d0-dcos(phi))+CDB*(1.d0-dcos(3.d0*phi))
-                  dvdp=CDA*sin(phi)+3.d0*CDB*sin(3.d0*phi)
+                  ! INT_10: Dihedral angle (unstructured, statistical)
+                  j=min(inameseq(ib-1),3)
+                  k=min(inameseq(ib),3)
+                  sinfi=dsin(phi)
+                  cosfi=cosphi
+                  sin2fi=sinfi**2
+                  cos2fi=cosfi**2
+                  sincosfi=sinfi*cosfi
+                  ene=dihpot(1,j,k)+dihpot(2,j,k)*sinfi
+     $                 +dihpot(3,j,k)*cosfi
+     +                 +dihpot(4,j,k)*sin2fi+dihpot(5,j,k)*cos2fi
+     +                 +dihpot(6,j,k)*sincosfi
+                  dvdp=dihpot(2,j,k)*cosfi-dihpot(3,j,k)*sinfi
+     +                 +2.d0*(dihpot(4,j,k)-dihpot(5,j,k))*sincosfi
+     +                 +dihpot(6,j,k)*(cos2fi-sin2fi)
                endif
-            else
-               j=min(inameseq(ib-1),3)
-               k=min(inameseq(ib),3)
-               sinfi=dsin(phi)
-               cosfi=cosphi
-               sin2fi=sinfi**2
-               cos2fi=cosfi**2
-               sincosfi=sinfi*cosfi
-               ene=dihpot(1,j,k)+dihpot(2,j,k)*sinfi
-     $              +dihpot(3,j,k)*cosfi
-     +              +dihpot(4,j,k)*sin2fi+dihpot(5,j,k)*cos2fi
-     +              +dihpot(6,j,k)*sincosfi
-               dvdp=dihpot(2,j,k)*cosfi-dihpot(3,j,k)*sinfi
-     +              +2.d0*(dihpot(4,j,k)-dihpot(5,j,k))*sincosfi
-     +              +dihpot(6,j,k)*(cos2fi-sin2fi)
+               if(lsldh) then
+                  dvdp=dvdp*cofdih
+                  ene=ene*cofdih
+               endif
+               epot=epot+ene    
+               fx(i1)=fx(i1)-dvdp*fi(1)
+               fy(i1)=fy(i1)-dvdp*fi(2)
+               fz(i1)=fz(i1)-dvdp*fi(3)
+               fx(i2)=fx(i2)-dvdp*fj(1)
+               fy(i2)=fy(i2)-dvdp*fj(2)
+               fz(i2)=fz(i2)-dvdp*fj(3)
+               fx(i3)=fx(i3)-dvdp*fk(1)
+               fy(i3)=fy(i3)-dvdp*fk(2)
+               fz(i3)=fz(i3)-dvdp*fk(3)
+               fx(i4)=fx(i4)-dvdp*fl(1)
+               fy(i4)=fy(i4)-dvdp*fl(2)
+               fz(i4)=fz(i4)-dvdp*fl(3)
             endif
-            if(lsldh) then
-               dvdp=dvdp*cofdih
-               ene=ene*cofdih
-            endif
-            epot=epot+ene    
-            fx(i1)=fx(i1)-dvdp*fi(1)
-            fy(i1)=fy(i1)-dvdp*fi(2)
-            fz(i1)=fz(i1)-dvdp*fi(3)
-            fx(i2)=fx(i2)-dvdp*fj(1)
-            fy(i2)=fy(i2)-dvdp*fj(2)
-            fz(i2)=fz(i2)-dvdp*fj(3)
-            fx(i3)=fx(i3)-dvdp*fk(1)
-            fy(i3)=fy(i3)-dvdp*fk(2)
-            fz(i3)=fz(i3)-dvdp*fk(3)
-            fx(i4)=fx(i4)-dvdp*fl(1)
-            fy(i4)=fy(i4)-dvdp*fl(2)
-            fz(i4)=fz(i4)-dvdp*fl(3)
          endif
-      endif
  200  continue
 !     $omp enddo nowait
 !     $omp end parallel 

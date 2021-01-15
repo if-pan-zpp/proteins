@@ -59,7 +59,8 @@ INPUT:  Every function here is called at most once and before the main loop star
 					(unwrapping coordinates arising from periodic boundary conditions).
 	load_cmap		VSimple	Loads native contacts directly from a .map file (also dihedral
 					and bond angles).
-	load_sequence		Simple	Loads a sequence of amino acids to simulate (for disordered proteins).
+	load_sequence		Simple	Loads sequences of amino acids to simulate (for disordered proteins),
+					also loads contact maps specified in the 'seqfile'.
 	load_paramfile		Simple	Loads various parameters from 'paramfile' (example3 has 'parameters.txt').
 
 +	compute_native_angles	VSimple Computes dihedral and bond angles for native conformation.
