@@ -654,7 +654,7 @@ c     dfold=dfold/unit
       rneisq=rnei*rnei
 c     bckbmin=bckbmin*bckbmin
 c     bckb2min=bckb2min*bckb2min
-      sdchnmax=sdchnmax*sdchnmax
+      sdchnmax=sdchnmax*sdchnmax ! Because we actually use a square in evalcpot.
       verlcut=verlcut/unit
       confcut=confcut/unit
       vrcut2sq=verlcut*verlcut/4.d0
@@ -2753,22 +2753,30 @@ C   THIS SUBROUTINE COMPUTE THE ENERGY AND FORCE OF THE CUSTOM POTENTIAL
 !$omp& jt2,itype,jtype,lki,lkj,icheck,lssn,kss,lss,kqadabs)
 !$omp do reduction(+:epot,intehc,intrhc,intesc,intrsc,ncord,icnss,icdss)
       do 466 k=1,kqont          ! non-native attractive contacts
-         lss=.false.
          kqistabs=abs(kqist(4,k,jq))
          kqadabs=abs(kqist(3,k,jq))
-         kremainder=kqistabs/kqist(4,k,jq) ! 1 for same protein
+
+         kremainder=kqistabs/kqist(4,k,jq) ! if the contact is within one chain then 1, otherwise -1
+
+         ! Values of 'iconttype' mean:
+         ! 1: no contact, 4: bb, 5: ss, 6: bs, 7: sb, 8: (i, i+4)
+         ! The corresponding 'kqistabs' value is the same as 'iconttype', 
+         ! unless 'lsim' is false (which is default) and 'iconttype' is 5, then
+         ! 'kqistabs' holds the value 21*x + y, where 'x' and 'y' are codes
+         ! of amino acids in contact.
          if(kqistabs.gt.8) then
             iconttype=5
          else
             iconttype=kqistabs  ! 4-8 for backbone contact
          endif
+
          rsig=sigma1(kqistabs)  ! wrong if kqistabs<4, but w no effect
 c     if(abs(j-i).eq.4) rsig=sigma1(8)
          iconttype2=1           ! type of contact after checking conditions
+
          i=kqist(1,k,jq)        ! kqist 1 or 2 = residue numbers
          j=kqist(2,k,jq)        ! jq = number of verlet list (1 or 2)
-         itype=ksdchns(i)
-         jtype=ksdchns(j)
+
          dx = x0(i)-x0(j)
          dy = y0(i)-y0(j)
          dz = z0(i)-z0(j)
@@ -2776,53 +2784,103 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
          if(lpbcy) dy = dy-ysep*nint(dy*yinv)
          if(lpbcz) dz = dz-zsep*nint(dz*zinv)
          rsq=dx*dx+dy*dy+dz*dz
+
          if(rsq.lt.rneisq) then
             nei(1,i)=nei(1,i)+1
             nei(1,j)=nei(1,j)+1
          endif
          if(rsq.gt.rcutsq) then
-            if(kqadabs.ne.0)
-     $           kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
+            if(kqadabs.ne.0) kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
             goto 465
          endif
+
          r = sqrt(rsq)
+
+         itype=ksdchns(i)
+         jtype=ksdchns(j)
          lelectr=(lcpot.and.itype+jtype.gt.7)
+
+         ! START OF DEFINING CONTACT TYPES
+         ! If a contact is found, 'iconttype2' is set
+         ! and k
+         if(rsq.lt.rneisq) then
+            nei(1,i)=nei(1,i)+1
+            nei(1,j)=nei(1,j)+1
+         endif
+         if(rsq.gt.rcutsq) then
+            if(kqadabs.ne.0) kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
+            goto 465
+         endif
+
+         r = sqrt(rsq)
+
+         itype=ksdchns(i)
+         jtype=ksdchns(j)
+         lelectr=(lcpot.and.itype+jtype.gt.7)
+
+         ! START OF DEFINING CONTACT TYPES
+         ! If a contact is found, 'iconttype2' is set
+         ! and 'kqistabs' is updated according to the rules
+         ! described at the beginning of the enclosing loop.
          if(iconttype.lt.2) then
-!     ---------- contact not formed ----------------------------
+            !     ---------- contact not formed ----------------------------
+
+            ! This if is only for speed optimization (just the if line, not its body). 
+            ! If it's not true, then the residues are too far 
+            ! from each other to form an ss/sb/bs contact.
+            ! Presumably, that also excludes the possibility of a bb contact. (TODO: ask about it)
+            ! Also, it can be a bug if 'lsim' is true, 
+            ! because we should use sigma1(5) instead of sigma1(21*x+y).
             if(r.lt.sfact*(max(sigma1(inameseq(i)*21+inameseq(j)),
-     +           sigma1(6)))) then ! this if is only for speed optimization
+     +           sigma1(6)))) then 
+
+               ! Checking conditions for a backbone-backbone contact
                bbir=0.0         ! bb = backbone, ir = criterion for r and residue i
                bbjr=0.0
                kmaxbckbi=kmaxbckb
                if(inameseq(i).eq.2) kmaxbckbi=1 ! pro has only 1 hbond
-               if(khbful(1,i).lt.kmaxbckbi) then ! cos(n,r)
+               if(khbful(1,i).lt.kmaxbckbi) then ! |cos(h_i,r_ij)|
                   bbir=abs((vxv(1,i)*dx+vxv(2,i)*dy+vxv(3,i)*dz)/r)
                endif
                kmaxbckbj=kmaxbckb
                if(inameseq(j).eq.2) kmaxbckbj=1 ! pro has only 1 hbond
-               if(khbful(1,j).lt.kmaxbckbj) then ! cos(n,r)
+               if(khbful(1,j).lt.kmaxbckbj) then ! |cos(h_j,r_ij)|
                   bbjr=abs((vxv(1,j)*dx+vxv(2,j)*dy+vxv(3,j)*dz)/r)
                endif
-!     if(bbir+bbjr.gt.2.d0*bckb2min) then
+
+               ! if(bbir+bbjr.gt.2.d0*bckb2min) then
                if(bbir.gt.bckb2min .and. bbjr.gt.bckb2min) then
                   if((abs(j-i).ne.4).or.kremainder.ne.1) then
                      bbij=vxv(1,i)*vxv(1,j)+vxv(2,i)*vxv(2,j)+
      $                    vxv(3,i)*vxv(3,j)
-                     if(abs(bbij).gt.bckbmin) iconttype2=4 ! backbone-backbone
+                     if(abs(bbij).gt.bckbmin) iconttype2=4 ! bb contact found
                   endif
                endif
-!     if(abs(bbij)+bbir+bbjr.gt.3*bckbmin) iconttype2=4
-!     endif
+               !    if(abs(bbij)+bbir+bbjr.gt.3*bckbmin) iconttype2=4
+               ! endif
+
+
+
+               ! If there's no bb contact found, try bs or sb.
+               ! All this code does is checking the angle conditions for bs/sb contacts
+               ! and coordination number condition.
+               ! The only weird thing is that if the number of neighbours is less than 'neimin'
+               ! then we increase the coordination number by 1, but 'neimin' is 0 by default,
+               ! so it's likely an obscure feature.
                if(iconttype2.lt.2) then
+                  ! sdchni will be 0 if cos(n, r) < 0, otherwise it'll be cos^2(n, r)
+                  ! Comparing sdchni < sdchnmax is equivalent to checking if
+                  ! cos(n, r) < 0.5 (because sdchnmax = 0.5**2 by default)
                   sdchni=1.0    ! sdchn or sd = sidechain
                   ksi=khbful(2,i)
                   if(nei(2,i).lt.neimin) ksi=ksi+1
                   if((i.gt.1).and.ksi.lt.ksdchn(inameseq(i),2))then
-                     i0=i-1     ! khbful 1-bb contacts,2-sd cont.,3-max sd cont
+                     i0=i-1 
                      sdir=(v(1,i0)-v(1,i))*dx+(v(2,i0)-v(2,i))*dy+
      $                    (v(3,i0)-v(3,i))*dz
                      sdirnrm=0.0
-                     if(sdir.lt.0.0) then ! if <0, no need to compute norm
+                     if(sdir.lt.0.0) then
+                        ! We know now that cos(n, r) < 0, no need to calculate it exactly.
                         sdchni=0.0
                      else
                         do l=1,3
@@ -2832,9 +2890,11 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                         sdchni=sdir !min(1.0,max(sdchnmax-sdir,0.0)/sdchnmin)
                      endif
                   endif
+
                   if(bbjr.gt.bckb2min .and. sdchni.lt.sdchnmax) then
                      iconttype2=7 ! sidechain-backbone
                   else
+                     ! We repeat exactly the same logic but with i and j switched.
                      sdchnj=1.0
                      ksj=khbful(2,j)
                      if(nei(2,j).lt.neimin) ksj=ksj+1 
@@ -2844,12 +2904,13 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
      $                       +(v(3,j)-v(3,j0))*dz
                         sdjrnrm=0.0
                         if(sdjr.lt.0.0) then
+                           ! We know now that cos(n, r) < 0, no need to calculate it exactly.
                            sdchnj=0.0
                         else
                            do l=1,3
                               sdjrnrm=sdjrnrm+(v(l,j)-v(l,j0))**2
                            enddo
-                           sdjr=sdjr**2/(sdjrnrm*rsq)
+                           sdjr=sdjr**2/(sdjrnrm*rsq) ! cos^2(n, r)
                            sdchnj=sdjr !min(1.0,max(sdchnmax-sdjr,0.0)/sdchnmin)
                         endif
                      endif
@@ -2858,27 +2919,45 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                      endif
                   endif
                endif
+
+
+
+
+
+               ! If there's still no contact found, try ss.
                if(iconttype2.lt.2) then
                   if(sdchni.lt.sdchnmax.and.sdchnj.lt.sdchnmax) then
+                     ! This checks coordination number condition for 
+                     ! polar/hydrophobic ss contacts.
                      it2=2+min(itype,2)
                      jt2=2+min(jtype,2)
                      lki=khbful(jt2,i).lt.ksdchn(inameseq(i),jt2)
                      lkj=khbful(it2,j).lt.ksdchn(inameseq(j),it2)
+
+
+                     ! TODO: does this really do the thing the paper wants it to?
                      lel=(.not.(lelectr.and.itype.eq.jtype))
+
+                     ! Trp-Trp (i,i+3) ss contacts are disabled.
                      ltr=(inameseq(i).eq.20.and.inameseq(j).eq.20
      $                    .and.abs(j-i).eq.3)
-!     ksdchnsi=min(2,ksdchns(i))
-!     ksdchnsj=min(2,ksdchns(j))
+
+                     ! ksdchnsi=min(2,ksdchns(i))
+                     ! ksdchnsj=min(2,ksdchns(j))
                      if(lel.and.lki.and.lkj.and..not.ltr) iconttype2=5 !sd-sd
-!     if(ksdchnsi.eq.ksdchnsj) iconttype2=5 ! sidechain-sd
+                     ! if(ksdchnsi.eq.ksdchnsj) iconttype2=5 ! sidechain-sd
                   endif
                endif
+
                if(lsim.or.iconttype2.ne.5) then
                   kqistabs=iconttype2
                else
                   kqistabs=inameseq(i)*21+inameseq(j)
                endif
             endif               ! end of the speed optimization if
+
+            ! If we found a contact and the distance between residues
+            ! is smaller than the threshold, do some bookkeeping. 
             if(r.le.sigma1(kqistabs)*sfact.and.iconttype2.gt.1) then 
                kqist(4,k,jq)=sign(kqistabs,kqist(4,k,jq))
                if(kqadabs.lt.ad) kqist(3,k,jq)=kqadabs+1
@@ -2903,32 +2982,33 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                         if(ldynss) then
                            icheck=0
                            do kss=1,nssb
-                              if(ksb(1,kss).eq.i
-     $                             .and.ksb(2,kss).eq.j) then
-                              icheck=1
-                              icnss=icnss+1
-                           endif
-                           if(ksb(2,kss).eq.i.and.ksb(1,kss).eq.j) then
-                              icheck=1
-                              icnss=icnss+1
-                           endif
-                        enddo
-                        if(icheck.eq.0) icdss=icdss+1
+                              if(ksb(1,kss).eq.i.and.ksb(2,kss).eq.j)
+     $                             then
+                                 icheck=1
+                                 icnss=icnss+1
+                              endif
+                              if(ksb(2,kss).eq.i.and.ksb(1,kss).eq.j)
+     $                             then
+                                 icheck=1
+                                 icnss=icnss+1
+                              endif
+                           enddo
+                           if(icheck.eq.0) icdss=icdss+1
+                        endif
                      endif
                   endif
-               endif
-            else if(iconttype2.eq.7) then ! sidechain-backbone
-               khbful(2,i)=khbful(2,i)+1
-               khbful(1,j)=khbful(1,j)+1
-!     khbful(4,j)=khbful(4,j)+1
-            else if(iconttype2.eq.6) then ! backbone-sidechain
-               khbful(2,j)=khbful(2,j)+1
-               khbful(1,i)=khbful(1,i)+1
-!     khbful(4,i)=khbful(4,i)+1
-            else if(iconttype2.eq.4) then ! backbone-backbone
-               khbful(1,i)=khbful(1,i)+1
-               khbful(1,j)=khbful(1,j)+1
-            endif               ! kqist 4 = type of contact
+               else if(iconttype2.eq.7) then ! sidechain-backbone
+                  khbful(2,i)=khbful(2,i)+1
+                  khbful(1,j)=khbful(1,j)+1
+                  ! khbful(4,j)=khbful(4,j)+1
+               else if(iconttype2.eq.6) then ! backbone-sidechain
+                  khbful(2,j)=khbful(2,j)+1
+                  khbful(1,i)=khbful(1,i)+1
+                  ! khbful(4,i)=khbful(4,i)+1
+               else if(iconttype2.eq.4) then ! backbone-backbone
+                  khbful(1,i)=khbful(1,i)+1
+                  khbful(1,j)=khbful(1,j)+1
+               endif               ! kqist 4 = type of contact
          else
             iconttype2=1
             if(kqadabs.ne.0)
@@ -2947,7 +3027,7 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
 !     nli(5,ncnt)=kqist(4,k,jq)
 !     endif
             iconttype2=min(iconttype,6) ! bb-sd (6) and sd-bb (7)
-            if(kremainder.eq.1) then ! are the same type
+            if(kremainder.eq.1) then ! are in the same chain
                intrhc=intrhc+1
                icnt(iconttype2)=icnt(iconttype2)+1
             else
@@ -2963,7 +3043,10 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
             endif
          endif
       endif
+
 !     END OF DEFINING CONTACT TYPES, NOW COMPUTING FORCES
+
+      lss=.false.
       if(ldynss.and.inameseq(i).eq.4 .and. inameseq(j).eq.4
      +     .and.iconttype.eq.5 .and. knct3rd(i).eq.j) lss=.true.
       if(lss.or.(lcpot.and.(iconttype.gt.1))) then !attractive pot
@@ -3530,6 +3613,8 @@ c     chirality count does not include the gap
 
             if(lconect(j)) then ! i,i+2 contacts purely repulsive
                j=i+2
+
+               ! INT_12: Repulsive L-J between (i, i+2) within one chain.
                dx = xi-x0(j)
                dy = yi-y0(j)
                dz = zi-z0(j)
