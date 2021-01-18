@@ -2935,7 +2935,7 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                      lkj=khbful(it2,j).lt.ksdchn(inameseq(j),it2)
 
 
-                     ! TODO: does this really do the thing the paper wants it to?
+                     ! TODO: figure out this condition more.
                      lel=(.not.(lelectr.and.itype.eq.jtype))
 
                      ! Trp-Trp (i,i+3) ss contacts are disabled.
@@ -2974,11 +2974,14 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                         l3rdcn(j)=.true.
                         knct3rd(i)=j
                         knct3rd(j)=i
-                        if(kqist(4,k,jq).gt.0) then ! are the same type
+
+                        ! Update the number of (intra/inter)chain disulfide bonds.
+                        if(kqist(4,k,jq).gt.0) then ! i, j are in one chain
                            intrsc=intrsc+1
                         else
                            intesc=intesc+1
                         endif
+
                         if(ldynss) then
                            icheck=0
                            do kss=1,nssb
@@ -3018,14 +3021,14 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
 !     ---------- contact already formed ------------------------
          if(r.le.rsig*cntfct) then
             ncord=ncord+2
-!     if(lwritemap) then
-!     ncnt=ncnt+1
-!     nli(1,ncnt)=i
-!     nli(2,ncnt)=j
-!     nli(3,ncnt)=0
-!     nli(4,ncnt)=iconttype
-!     nli(5,ncnt)=kqist(4,k,jq)
-!     endif
+            ! if(lwritemap) then
+            !    ncnt=ncnt+1
+            !    nli(1,ncnt)=i
+            !    nli(2,ncnt)=j
+            !    nli(3,ncnt)=0
+            !    nli(4,ncnt)=iconttype
+            !    nli(5,ncnt)=kqist(4,k,jq)
+            ! endif
             iconttype2=min(iconttype,6) ! bb-sd (6) and sd-bb (7)
             if(kremainder.eq.1) then ! are in the same chain
                intrhc=intrhc+1
@@ -3050,8 +3053,11 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
       if(ldynss.and.inameseq(i).eq.4 .and. inameseq(j).eq.4
      +     .and.iconttype.eq.5 .and. knct3rd(i).eq.j) lss=.true.
       if(lss.or.(lcpot.and.(iconttype.gt.1))) then !attractive pot
+
+
          if(inameseq(i).eq.4 .and. inameseq(j).eq.4
      +        .and.iconttype.eq.5 .and. knct3rd(i).eq.j) then
+
             if(kqist(3,k,jq).lt.0) then
                totcoeff=-kqist(3,k,jq)/ad
             else
@@ -3061,23 +3067,32 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
             rb2 = rb*rb
             ene = totcoeff*(H1*rb2 + H2*rb2*rb2)
             fce = totcoeff*((2*H1+4*H2*rb2)*rb)
+
             lssn=(nei(2,i)+nei(2,j)).lt.neimaxdisul
             if(lssn.and.rb2.gt.0.1) then ! DESTROYING SS BOND
-c     kqist(4,k,jq)=kremainder ! contact destroyed
-c     l3rdcn(i)=.false.
-c     l3rdcn(j)=.false.
-c     knct3rd(i)=0
-c     knct3rd(j)=0
+
+               ! kqist(4,k,jq)=kremainder ! contact destroyed
+               ! l3rdcn(i)=.false.
+               ! l3rdcn(j)=.false.
+               ! knct3rd(i)=0
+               ! knct3rd(j)=0
+
+               ! Decreasing the number of (intra/inter)chain ss bonds.
                if(kqist(4,k,jq).gt.0) then ! are the same type
                   intrsc=intrsc-1
                else
                   intesc=intesc-1
                endif
-               if(kqist(3,k,jq).gt.0) then ! adiab. turning off
+
+               ! Adiabatic turning off.
+               if(kqist(3,k,jq).gt.0) then
                   kqist(3,k,jq)=1-kqist(3,k,jq)
                elseif(kqist(3,k,jq).lt.0) then
                   kqist(3,k,jq)=1+kqist(3,k,jq)
                endif
+
+               ! Finding if this ss bond was native or dynamic 
+               ! and decreasing the appropriate counter.
                if(ldynss) then
                   icheck=0
                   do kss=1,nssb
@@ -3092,8 +3107,14 @@ c     knct3rd(j)=0
                   enddo
                   if(icheck.eq.0) icdss=icdss-1
                endif
+
             endif
          else
+
+            ! By default, lsink is false, then all this code does is
+            ! totcoeff=potcoeff*(kqadabs)/ad
+            ! If lsink is true, it's something weird,
+            ! it should be true only if lpid is true anyway.
             if(lsink.and.r.le.rsig*c216) then
                if(r.le.cut) then
                   rsig=cut/c216 !*0.5d0**(1.d0/6.d0)
@@ -3105,15 +3126,20 @@ c     knct3rd(j)=0
                if(lsink.and.(.not.lelectr).and.kqadabs.eq.0) goto 465
                totcoeff=potcoeff*(kqadabs)/ad ! adiabatic
             endif
+
+
+            ! bb contacts are two times stronger than others.
             if(iconttype.eq.4) totcoeff=2.d0*totcoeff
+
             rsi=rsig/r
             r6=rsi**6
             ene=totcoeff*4.d0*r6*(r6-1.d0)
             fce=totcoeff*24.d0*r6*(1.d0-2.d0*r6)/r
-!     r10=rsi**10.
-!     r12=r10*rsi*rsi
-!     ene=5.d0*r12-6.d0*r10
-!     fce=60.d0*(r10-r12)/r
+            ! r10=rsi**10.
+            ! r12=r10*rsi*rsi
+            ! ene=5.d0*r12-6.d0*r10
+            ! fce=60.d0*(r10-r12)/r
+
             if(r.lt.cut.and..not.lsink) then !repulsion always on
                rsi=sigma0/r
                r6=rsi**6
@@ -3127,6 +3153,7 @@ c     knct3rd(j)=0
             ene=0.d0
             fce=0.d0
          else
+            ! INT_13: Repulsive L-J between all pairs.
             rsi=sigma0/r
             r6=rsi**6
             ene=4.d0*r6*(r6-1.d0)+1.d0
@@ -3191,6 +3218,7 @@ c     knct3rd(j)=0
       fy(j) = fy(j) - repy
       fz(i) = fz(i) + repz
       fz(j) = fz(j) - repz
+
  465  continue
       if(kqist(3,k,jq).eq.0 .and. iconttype.gt.2) then
          kqist(4,k,jq)=kremainder ! contact destroyed
@@ -3747,13 +3775,16 @@ c     chirality count does not include the gap
                      endif
                   endif
                endif
+               ! INT_14: Attractive L-J between native contacts
                rsi=rsig/r
                r6=rsi**6
                ene=4.d0*r6*(r6-1.d0)
                fce= 24.d0*r6*(1.d0-2.d0*r6)/r
             else if(abs(klist(3,icm)).eq.631) then ! for SSbonds
-c     ene=ene*disul
-c     fce=fce*disul
+               ! ene=ene*disul
+               ! fce=fce*disul
+
+               ! INT_15: SS bond (structured, harmonic)
                icn=icn+1
                rb = r - 6.d0/unit
                rb2 = rb*rb
