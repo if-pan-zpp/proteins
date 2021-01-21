@@ -1,3 +1,29 @@
+/*
+  Janek:
+  Integrator class - easy
+
+  Derived classes of potentials
+    - harmonic between (i,i+1)
+    - repulsive (i,i+2)
+
+  Kuba Bo:
+    - bond angle
+    - dihedral angle
+    - repulsive any pair <- uses verlet list
+    - L-J between native contacts 
+
+  Paweł:
+  Reading PDB and configs and getting native conformation, amino acid sequence etc.
+
+  Kuba Be:
+  Verlet List - easy
+
+  
+
+
+ */
+
+
 #include <fstream>
 #include "pdb/ir/parser.h"
 #include "state/def.h"
@@ -141,6 +167,7 @@ public:
 	cout << "We're in step " << state.cur_step << endl;
 	
     }
+
 private:
     const State &state;
     const PAtoms &p_atoms;
@@ -156,7 +183,7 @@ public:
 	       const State &_state,
 	       const PAtoms &_p_atoms) : state(_state) {}
 
-    void step(PAtoms &p_atoms, const Vec3DArray &forces) {
+    void take_step(PAtoms &p_atoms, const Vec3DArray &forces) {
 	def::Scalar temp = state.temperature;
     }
 
@@ -301,7 +328,7 @@ void Simulation::take_step() {
 	pot_ptr -> finish_step(statistics);
     }
 
-    integrator.step(p_atoms, forces);
+    integrator.take_step(p_atoms, forces);
     statistics.take_step();
 }
 
