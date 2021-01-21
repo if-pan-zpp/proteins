@@ -1,6 +1,7 @@
 #include <fstream>
 #include "pdb/ir/parser.h"
 #include "state/def.h"
+#include "conf/constants.h"
 #include <eigen3/Eigen/Core>
 using namespace std;
 
@@ -21,25 +22,28 @@ public:
 class State {
 public:
     
-    void init(const Config config);
+    void init(const Config &config);
 };
 
 class VerList {
 public:
     
-    void init(const Config config);
+    void init(const Config &config);
 };
 
 /* Class for storing pseudo-atoms.
  */
 class PAtoms {
 public:
-    void init(const Config config);
+    void init(const Config &config);
+    int n;
+    array<Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
+    
 };
 
 class Statistics {
 public:
-    void init(const Config config);
+    void init(const Config &config);
 };
 
 class Integrator {
@@ -47,8 +51,6 @@ public:
     void init(const Config &config, const PAtoms &p_atoms);
     void step(PAtoms &p_atoms);
 private:
-    static const int ORDER = 5;
-    array<Vec3DArray, ORDER + 1> x; // derivatives 
 };
 
 // POTENTIALS
