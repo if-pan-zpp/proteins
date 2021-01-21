@@ -6,6 +6,15 @@
 #include <eigen3/Eigen/Core>
 using namespace std;
 
+/*
+ * This should cover all configuration that isn't done at compile time. 
+ * It should always be constant after construction.
+ *
+ * Almost every class will get a const ref to this class in its constructor.
+ * But it is discouraged to keep this ref, rather we should copy the relevant
+ * parameters, because in most cases it will be a handful of variables and this
+ * way we clearly show in one place which parameters influence this particular class.
+ */
 class Config {
 public:
     Config(int argc, char **argv) {
@@ -28,6 +37,8 @@ public:
 /*
  * Class that stores the state of the environment. 
  * Examples: temperature, movement of walls, current step.
+ *
+ * We need to figure out which classes should be allowed to make changes here.
  */
 class State {
 public:
@@ -46,7 +57,17 @@ public:
 };
 
 
-/* Class for storing pseudo-atoms.
+/*
+ * Class for storing pseudo-atoms. It holds:
+ * - positions and their derivatives
+ * - masses, amino acid sequence etc.
+ * - division into chains
+ * - division into structured and unstructured parts
+ * - method for calculating the distance between two pseudatoms
+ *   (because it depends on periodic boundary conditions and is used a lot)
+ * - ...
+ * 
+ * After construction, only Integrator can make changes here.
  */
 class PAtoms {
 public:
@@ -58,32 +79,57 @@ public:
     
 };
 
+/*
+ * Class that provides list of pairs of pseudoatoms that are close.
+ * The exact design and implementation is a very hard and interesting problem.
+ * But for the purposes of the prototype that follows cg.f in its implementation,
+ * it's easy for now.
+ */
 class VerList {
 public:
-    VerList(const Config &_config, const PAtoms &_p_atoms) {
+    VerList(const Config &_config, const PAtoms &_p_atoms)
+	: p_atoms(_p_atoms) {
+
 	eps_upper_bound = _config.verlet_list_max_eps;
     }
 
     using VerIt = vector<pair<int,int>>::const_iterator;
+
+    /* 
+     * This returns a range in an unmodifiable vector of pairs
+     * that contains every pair closer than 'eps'. 
+     */
     pair<VerIt, VerIt> get_verlet_list(def::Scalar eps) const {
 	return {list.begin(), list.end()};
     }
 
+    /* 
+     * This calculates the distances between last saved positions and current positions.
+     * If it's too big, it recalculates the list.
+    */
     void take_step() {
     }
 
+    /* 
+     * Potential objects can register the eps that they need before the start of the simulation.
+     */
     void register_eps(def::Scalar req_eps) {
 	assert (req_eps < eps_upper_bound);
 	biggest_req_eps = max(biggest_req_eps, req_eps);
     }
 
 private:
+    const PAtoms &p_atoms;
     def::Scalar eps_upper_bound;
     def::Scalar biggest_req_eps = 0.;
     vector<pair<int, int>> list;
+  
 };
 
 
+/* 
+ * 
+ */
 class Statistics {
 public:
     Statistics(const Config &_config,
@@ -100,20 +146,26 @@ private:
     const PAtoms &p_atoms;
 };
 
+/*
+ * This deals with langevin dynamics (damping and thermal noise)
+ * as well as the predictor-corrector algorithm.
+ */
 class Integrator {
 public:
     Integrator(const Config &_config,
 	       const State &_state,
 	       const PAtoms &_p_atoms) : state(_state) {}
+
     void step(PAtoms &p_atoms, const Vec3DArray &forces) {
 	def::Scalar temp = state.temperature;
-	// Implement predictor-corrector here.
     }
+
 private:
     const State &state;
 };
 
 // POTENTIALS
+
 
 class Potential {
 public:
@@ -123,9 +175,17 @@ public:
 	state(_state), p_atoms(_p_atoms) {}
 
     virtual void init_and_register(VerList &verlet_list) {}
+
+    /*
+     * We split one step into those three functions, because
+     * in the future we may want to be able to write calculate_forces
+     * in a way that can run concurrently with other calculate_forces calls
+     * (from this and other potentials). But some elements need synchronization anyway. 
+     */
     virtual void init_step() {}
     virtual Vec3DArray calculate_forces(const VerList &verlet_list) = 0;
     virtual void finish_step(Statistics &statistics) {}
+
     virtual bool is_enabled() const = 0;
 
 protected:
@@ -183,8 +243,9 @@ private:
 
 
 /*
-  This class deals with everything that
-  isn't taking/checking some input from a user.
+ * This class deals with everything that
+ * isn't taking/checking some input from a user.
+ * In particular, it runs the main loop.
  */
 class Simulation {
 public:
