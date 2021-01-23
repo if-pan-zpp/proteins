@@ -1,5 +1,5 @@
 #pragma once
-#include "line_parser.h"
+#include "line_parser.hpp"
 
 namespace pdb::ir {
     class AutoLineParser: public LineParser {

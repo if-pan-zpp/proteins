@@ -1,6 +1,6 @@
 #pragma once
-#include "def.h"
-#include "ir.pb.h"
+#include "def.hpp"
+#include "ir.pb.hpp"
 #include <string>
 
 namespace state {

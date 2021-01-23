@@ -4,7 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include "ir.pb.h"
-#include "line_parser.h"
+#include "line_parser.hpp"
 
 namespace pdb::ir {
     class Parser {

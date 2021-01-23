@@ -1,6 +1,6 @@
-#include "parser.h"
-#include "auto_line_parser.h"
-#include "util/str.h"
+#include "parser.hpp"
+#include "auto_line_parser.hpp"
+#include "util/str.hpp"
 #include <string>
 #include <string_view>
 using namespace std;

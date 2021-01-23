@@ -1,10 +1,8 @@
 add_executable(pt)
 
-set(Sources main.cpp pdb/ir/parser.cpp pdb/ir/auto_line_parser.cpp
-    util/str.cpp conf/legacy/parser.cpp util/field.cpp)
-set(Headers pdb/ir/parser.h pdb/ir/line_parser.h pdb/ir/auto_line_parser.h
-    util/str.h conf/legacy/parser.h util/field.h def/types.h def/units.h conf/constants.h)
-set(ProtoFiles pdb/ir/ir.proto conf/legacy/legacy.proto)
+FILE(GLOB Sources *.cpp pdb/ir/*.cpp util/*.cpp potentials/*.cpp)
+FILE(GLOB Headers *.hpp pdb/ir/*.hpp util/*.cpp conf/*.hpp def/*.hpp potentials/*.hpp)
+set(ProtoFiles pdb/ir/ir.proto)
 set(Resources 1ubq.pdb inputfile1)
 
 foreach(Proto IN LISTS ProtoFiles)
