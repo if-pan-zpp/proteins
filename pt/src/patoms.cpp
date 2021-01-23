@@ -1,5 +1,5 @@
 #include "patoms.hpp"
 
 PAtoms::PAtoms(const Config &config) {
-    n = 1;
+    n = 100;
 }

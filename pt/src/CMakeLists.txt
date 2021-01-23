@@ -1,8 +1,10 @@
 add_executable(pt)
 
-FILE(GLOB Sources *.cpp pdb/ir/*.cpp util/*.cpp potentials/*.cpp)
+FILE(GLOB Sources *.cpp pdb/ir/*.cpp util/*.cpp conf/*.cpp potentials/*.cpp)
 FILE(GLOB Headers *.hpp pdb/ir/*.hpp util/*.cpp conf/*.hpp def/*.hpp potentials/*.hpp)
 set(ProtoFiles pdb/ir/ir.proto)
+
+set(ResourcesDir ../resources/)
 set(Resources 1ubq.pdb inputfile1)
 
 foreach(Proto IN LISTS ProtoFiles)
@@ -22,5 +24,5 @@ target_include_directories(pt
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR})
 
 foreach(Resource IN LISTS Resources)
-    configure_file(${Resource} ${Resource} COPYONLY)
+	configure_file(${ResourcesDir}${Resource} ${Resource} COPYONLY)
 endforeach()

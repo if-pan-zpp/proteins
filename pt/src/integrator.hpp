@@ -15,7 +15,7 @@ public:
                const State &_state,
                const PAtoms &_p_atoms);
 
-    void take_step(PAtoms &p_atoms, const Vec3DArray &forces);
+    void take_step(PAtoms &p_atoms, const def::Vec3DArray &forces);
 
 private:
     const State &state;

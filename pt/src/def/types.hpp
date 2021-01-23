@@ -1,8 +1,10 @@
 #pragma once
 #include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace def {
     using Scalar = double;
-    using Vectors = Eigen::Array3Xd;
-    using Scalars = Eigen::ArrayXd;
+    using ScalarArray = Eigen::ArrayXd;
+    using Vec3D = Eigen::RowVector3d;
+    using Vec3DArray = Eigen::ArrayX3d;
 }

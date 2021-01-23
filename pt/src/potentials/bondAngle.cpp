@@ -8,8 +8,8 @@ BondAngle::BondAngle(const Config &_config,
     enabled = _config.angle_pot;
 }
 
-Vec3DArray BondAngle::calculate_forces(const VerList &verlet_list) {
-    return Vec3DArray::Zero(p_atoms.n, 3);
+def::Vec3DArray BondAngle::calculate_forces(const VerList &verlet_list) {
+    return def::Vec3DArray::Zero(p_atoms.n, 3);
 }
 bool BondAngle::is_enabled() const {
     return enabled;

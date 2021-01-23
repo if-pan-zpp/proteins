@@ -23,7 +23,7 @@ public:
      * (from this and other potentials). But some elements need synchronization anyway.
      */
     virtual void init_step() {}
-    virtual Vec3DArray calculate_forces(const VerList &verlet_list) = 0;
+    virtual def::Vec3DArray calculate_forces(const VerList &verlet_list) = 0;
     virtual void finish_step(Statistics &statistics) {}
 
     virtual bool is_enabled() const = 0;

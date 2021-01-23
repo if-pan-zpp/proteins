@@ -1,5 +1,5 @@
 #pragma once
-#include "state/def.hpp"
+#include "def/types.hpp"
 #include "conf/constants.hpp"
 #include "config.hpp"
 using namespace std;
@@ -20,6 +20,6 @@ class PAtoms {
 public:
     PAtoms(const Config &config);
     int n;
-    array<Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
+    array<def::Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
 
 };
