@@ -28,7 +28,7 @@ private:
     Integrator integrator;
     Statistics statistics;
 
-    def::Vec3DArray forces;
+    Vec3DArray forces;
 
     void take_step();
 };

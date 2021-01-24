@@ -20,9 +20,10 @@ public:
     bool angle_pot = true;
     bool dih_angle_pot = false;
     bool tabularized_angle_pot;
+    Scalar k_theta = 20.0; // CBA in cg.f
 
     // Other configs:
     string out_filename;
     int max_steps = 10;
-    def::Scalar verlet_list_max_eps = 10.0;
+    Scalar verlet_list_max_eps = 10.0;
 };

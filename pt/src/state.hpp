@@ -16,5 +16,5 @@ public:
     void take_step();
     int max_steps = 0;
     int cur_step = 0;
-    def::Scalar temperature = 0.15;
+    Scalar temperature = 0.15;
 };

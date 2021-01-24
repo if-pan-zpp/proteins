@@ -20,12 +20,16 @@ void Simulation::take_step() {
     state.take_step();
     verlet_list.take_step();
 
-    forces = def::Vec3DArray::Zero(p_atoms.n, 3);
+    forces = Vec3DArray::Zero(p_atoms.n, 3);
     for (auto &pot_ptr : potentials) {
         pot_ptr -> init_step();
         forces += pot_ptr -> calculate_forces(verlet_list);
         pot_ptr -> finish_step(statistics);
     }
+
+    // Example of Eigen usage.
+    Scalar avg_force_length = forces.pow(2).rowwise().sum().sqrt().sum() / p_atoms.n;
+    cout << avg_force_length << endl;
 
     integrator.take_step(p_atoms, forces);
     statistics.take_step();

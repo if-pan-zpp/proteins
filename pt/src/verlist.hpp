@@ -20,7 +20,7 @@ public:
      * This returns a range in an unmodifiable vector of pairs
      * that contains every pair closer than 'eps'.
      */
-    pair<VerIt, VerIt> get_verlet_list(def::Scalar eps) const;
+    pair<VerIt, VerIt> get_verlet_list(Scalar eps) const;
 
     /*
      * This calculates the distances between last saved positions and current positions.
@@ -31,11 +31,11 @@ public:
     /*
      * Potential objects can register the eps that they need before the start of the simulation.
      */
-    void register_eps(def::Scalar req_eps);
+    void register_eps(Scalar req_eps);
 
 private:
     const PAtoms &p_atoms;
-    def::Scalar eps_upper_bound;
-    def::Scalar biggest_req_eps = 0.;
+    Scalar eps_upper_bound;
+    Scalar biggest_req_eps = 0.;
     vector<pair<int, int>> list;
 };

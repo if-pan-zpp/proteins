@@ -11,7 +11,7 @@ VerList::VerList(const Config &_config, const PAtoms &_p_atoms)
  * This returns a range in an unmodifiable vector of pairs
  * that contains every pair closer than 'eps'.
  */
-pair<VerIt, VerIt> VerList::get_verlet_list(def::Scalar eps) const {
+pair<VerIt, VerIt> VerList::get_verlet_list(Scalar eps) const {
     return {list.begin(), list.end()};
 }
 
@@ -26,7 +26,7 @@ void VerList::take_step() {
 /*
  * Potential objects can register the eps that they need before the start of the simulation.
  */
-void VerList::register_eps(def::Scalar req_eps) {
+void VerList::register_eps(Scalar req_eps) {
     assert (req_eps < eps_upper_bound);
     biggest_req_eps = max(biggest_req_eps, req_eps);
 }

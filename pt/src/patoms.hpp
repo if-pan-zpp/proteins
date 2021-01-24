@@ -20,6 +20,7 @@ class PAtoms {
 public:
     PAtoms(const Config &config);
     int n;
-    array<def::Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
-
+    array<Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
+    vector<FatBool> connected; // 0 if (i, i+1) are in different chains, != 0 otherwise
+    vector<Scalar> native_theta;
 };
