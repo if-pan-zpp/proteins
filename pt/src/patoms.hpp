@@ -2,6 +2,7 @@
 #include "def/types.hpp"
 #include "conf/constants.hpp"
 #include "config.hpp"
+#include <vector>
 using namespace std;
 
 /*

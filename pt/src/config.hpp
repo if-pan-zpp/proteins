@@ -1,5 +1,6 @@
 #pragma once
 #include "def/types.hpp"
+#include "conf/constants.hpp"
 #include <string>
 using namespace std;
 
@@ -21,6 +22,19 @@ public:
     bool dih_angle_pot = false;
     bool tabularized_angle_pot;
     Scalar k_theta = 30.0; // CBA in cg.f
+
+    // Simulation settings:
+    int first_index = 0; // first simulated index (nen1 in old code)
+
+    // Temperature constants:
+    Scalar delta = 0.005;
+    Scalar gamma = 2.0;
+    Scalar temp_start = 0.35;
+    Scalar temp_end = 0.35;
+    Scalar temp_step = 0.05;
+
+    //Predictor-corrector parameters:
+    array<Scalar, DER_ORDER + 1>pred_corr_params = {3/16, 251/360, 1, 11/18, 1/6, 1/60};
 
     // Other configs:
     string out_filename;
