@@ -7,10 +7,6 @@
 <         lwritexyz=.false. ! WRITE COORDINATES IN XYZ FILE INSTEAD OF PDB
 ---
 >         lwritexyz=.true.  ! WRITE COORDINATES IN XYZ FILE INSTEAD OF PDB
-152c156
-<         ldi=.true.     ! FOR DIHEDRAL TERM IN POTENTIALS, IF LANGLE IS T
----
->         ldi=.false.    ! FOR DIHEDRAL TERM IN POTENTIALS, IF LANGLE IS T
 642a647,648
 >         open(16,file='test_input.txt',status='unknown')
 > 

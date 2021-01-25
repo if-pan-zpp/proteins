@@ -37,7 +37,7 @@ Vec3DArray BondAngle::calculate_forces(const VerList &verlet_list) {
 
     for (size_t i = 0; i < (size_t) (p_atoms.n - 2); ++i) {
         if (p_atoms.connected[i] && p_atoms.connected[i + 1]) {
-            Vec3D v0 = pos.row(i + 1) - pos.row(i);
+            Vec3D v0 = pos.row(i + 1) - pos.row(i + 0);
             Vec3D v1 = pos.row(i + 2) - pos.row(i + 1);
 
             Scalar v0_norm = v0.norm();

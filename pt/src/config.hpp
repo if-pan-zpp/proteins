@@ -19,9 +19,13 @@ public:
 
     // Angle potential:
     bool angle_pot = true;
-    bool dih_angle_pot = false;
-    bool tabularized_angle_pot;
-    Scalar k_theta = 30.0; // CBA in cg.f
+    bool dih_angle_pot = true;
+    bool tabularized_angle_pot = false;
+    bool harmonic_dih_pot = true;
+    Scalar k_theta = 30.0;        // CBA in cg.f
+    Scalar k_phi_harmonic = 3.33; // CDH in cg.f
+    Scalar k_phi_1 = 0.66;        // CDA in cg.f
+    Scalar k_phi_2 = 0.66;        // CDB in cg.f
 
     // Simulation settings:
     int first_index = 0; // first simulated index (nen1 in old code)
