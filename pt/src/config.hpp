@@ -21,7 +21,7 @@ public:
     bool angle_pot = true;
     bool dih_angle_pot = true;
     bool tabularized_angle_pot = false;
-    bool harmonic_dih_pot = true;
+    bool harmonic_dih_pot = false;
     Scalar k_theta = 30.0;        // CBA in cg.f
     Scalar k_phi_harmonic = 3.33; // CDH in cg.f
     Scalar k_phi_1 = 0.66;        // CDA in cg.f
