@@ -23,5 +23,13 @@ private:
     const Scalar delta;
     const int first_index;
     const int residues;
-    const array<Scalar, DER_ORDER + 1>pred_corr_params;
+    const array<Scalar, DER_ORDER + 1> pred_corr_params =
+    {3./16,  251./360,  1.,  11./18,  1./6,  1./60};
+    const array<array<Scalar, DER_ORDER + 1>, DER_ORDER + 1> newton_symbol = 
+    {{{{1, 1, 1, 1, 1,  1}},
+      {{0, 1, 2, 3, 4,  5}},
+      {{0, 0, 1, 3, 6, 10}},
+      {{0, 0, 0, 1, 4, 10}},
+      {{0, 0, 0, 0, 1,  5}},
+      {{0, 0, 0, 0, 0,  1}}}};
 };

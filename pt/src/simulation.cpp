@@ -13,11 +13,12 @@ Simulation::Simulation(const Config &config) :
 
     for (auto &pot_ptr : potentials) pot_ptr -> init_and_register(verlet_list);
 
-    cout << "Number of enabled potentials: " << potentials.size() << endl;
+    forces = Vec3DArray::Zero(p_atoms.n, 3);
+    
+    time_delta = config.delta;
 }
 
-void Simulation::take_step() {
-    state.take_step();
+void Simulation::calcForces() {
     verlet_list.take_step();
 
     forces = Vec3DArray::Zero(p_atoms.n, 3);
@@ -26,17 +27,21 @@ void Simulation::take_step() {
         forces += pot_ptr -> calculate_forces(verlet_list);
         pot_ptr -> finish_step(statistics);
     }
-
-    // Example of Eigen usage.
-    Scalar avg_force_length = forces.pow(2).rowwise().sum().sqrt().sum() / p_atoms.n;
-    cout << avg_force_length << endl;
-
-    integrator.take_step(p_atoms, forces);
-    statistics.take_step();
 }
 
 void Simulation::run() {
+    calcForces();
+    const Scalar time_delta_sq = 0.5 * time_delta * time_delta;
+    p_atoms.der[2] = time_delta_sq * forces;
+
     while (state.is_running()) {
-        take_step();
+        state.take_step();
+        integrator.take_step(p_atoms, forces);
+
+        calcForces();
+    
+        statistics.take_step();
     }
+    cout << "POSITIONS:\n";
+    cout << p_atoms.der[0] << endl;
 }

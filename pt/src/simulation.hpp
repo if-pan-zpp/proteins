@@ -30,7 +30,8 @@ private:
 
     Vec3DArray forces;
 
-    void take_step();
+    Scalar time_delta;
+    void calcForces();
 };
 
 

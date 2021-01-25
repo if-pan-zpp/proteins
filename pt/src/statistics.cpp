@@ -8,5 +8,4 @@ Statistics::Statistics(const Config &_config,
 
 void Statistics::take_step() {
     cout << "We're in step " << state.cur_step << endl;
-
 }

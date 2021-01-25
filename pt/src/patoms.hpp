@@ -23,5 +23,9 @@ public:
     int n;
     array<Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
     vector<FatBool> connected; // 0 if (i, i+1) are in different chains, != 0 otherwise
-    vector<Scalar> native_theta;
+    Vec3DArray native_pos;
+
+    // For testing, temporary. It's the number of times
+    // ran2 was called before running the simulation.
+    int rng_calls_cnt = 0; 
 };

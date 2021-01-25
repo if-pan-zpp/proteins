@@ -12,4 +12,5 @@ public:
 private:
     bool enabled = false;
     Scalar k_theta;
+    vector<Scalar> native_theta;
 };

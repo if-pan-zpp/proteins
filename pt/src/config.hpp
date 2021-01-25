@@ -33,11 +33,12 @@ public:
     Scalar temp_end = 0.35;
     Scalar temp_step = 0.05;
 
-    //Predictor-corrector parameters:
-    array<Scalar, DER_ORDER + 1>pred_corr_params = {3/16, 251/360, 1, 11/18, 1/6, 1/60};
 
     // Other configs:
     string out_filename;
-    int max_steps = 10;
+    int max_steps = 200;
     Scalar verlet_list_max_eps = 10.0;
+
+    // Testing (this is temporary)
+    string test_input_file = ""; 
 };
