@@ -51,6 +51,15 @@ PAtoms::PAtoms(const Config &config) {
                     der[1].row(i) = Eigen::Array3d(x, y, z);
                 }
             }
+            else if (word == "native_contacts") {
+                int cnt;
+                inp >> cnt;
+                for (int i = 0; i < cnt; ++i) {
+                    int a, b;
+                    inp >> a >> b;
+                    native_contacts.emplace_back(a, b);
+                }
+            }
         }
     }
 }

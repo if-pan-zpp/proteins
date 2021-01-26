@@ -25,6 +25,8 @@ public:
     vector<FatBool> connected; // 0 if (i, i+1) are in different chains, != 0 otherwise
     Vec3DArray native_pos;
 
+    vector<pair<int, int>> native_contacts;
+
     // For testing, temporary. It's the number of times
     // ran2 was called before running the simulation.
     int rng_calls_cnt = 0; 
