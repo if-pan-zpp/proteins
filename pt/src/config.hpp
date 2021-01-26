@@ -28,6 +28,11 @@ public:
     Scalar k_phi_1 = 0.66;        // CDA in cg.f
     Scalar k_phi_2 = 0.66;        // CDB in cg.f
 
+    // Other potentials:
+    Scalar H1 = 50.0_dAA2;
+    Scalar H2 = 0.0_dAA4;
+    Scalar repulsive_cutoff = 5.0_AA;
+
     // Simulation settings:
     int first_index = 0; // first simulated index (nen1 in old code)
     Scalar delta = 0.005;

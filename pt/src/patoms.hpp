@@ -23,7 +23,9 @@ public:
     int n;
     array<Vec3DArray, DER_ORDER + 1> der; // positions' derivatives.
     vector<FatBool> connected; // 0 if (i, i+1) are in different chains, != 0 otherwise
+    vector<u_int16_t> neighbours; // number of neighbours of residue
     Vec3DArray native_pos;
+    vector<Scalar> native_distances;
 
     vector<pair<int, int>> native_contacts;
 

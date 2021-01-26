@@ -10,6 +10,7 @@ PAtoms::PAtoms(const Config &config) {
         der[i] = Eigen::ArrayX3d::Zero(n, 3);
     }
     connected.resize(n, 1);
+    neighbours.resize(n, 0);
     native_pos = Eigen::ArrayX3d::Random(n, 3);
 
     // Read initial conditions from a test file.
@@ -62,4 +63,12 @@ PAtoms::PAtoms(const Config &config) {
             }
         }
     }
+
+    native_distances.resize(n, 0);
+
+    for (size_t i = 0; i < n - 1; i++) {
+        Vec3D diff_vec = native_pos.row(i + 1) - native_pos.row(i);
+        native_distances[i] = diff_vec.norm();
+    }
+
 }
