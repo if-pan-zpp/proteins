@@ -21,6 +21,30 @@ pair<VerIt, VerIt> VerList::get_verlet_list(Scalar eps) const {
  */
 
 void VerList::take_step() {
+    if (need_to_recompute()) {
+        list = {};
+        Vec3DArray const& pos = p_atoms.der[0];
+        auto cutoff_sq = pow(biggest_req_eps, 2);
+
+        // Are klist,kcist, krist etc. updates necessary for the prototype?
+        for (int i = 0; i < p_atoms.n; ++i) {
+            for (int j = i+1; j < p_atoms.n; ++j) {
+                Vec3D dx = pos.row(i) - pos.row(j);
+                if (dx.squaredNorm() < cutoff_sq) {
+                    list.emplace_back(i, j);
+                }
+            }
+        }
+    }
+}
+
+bool VerList::need_to_recompute() {
+    auto offsets = reference_pos - p_atoms.der[0];
+    auto offsets_sqnorm = offsets.rowwise().squaredNorm();
+
+    auto max_allowed_dist = biggest_req_eps / 2; // code_notes.f:660
+    auto has_moved_enough = offsets_sqnorm > pow(max_allowed_dist, 2);
+    return has_moved_enough.any();
 }
 
 /*

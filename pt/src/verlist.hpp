@@ -35,7 +35,10 @@ public:
 
 private:
     const PAtoms &p_atoms;
+    Vec3DArray reference_pos;
     Scalar eps_upper_bound;
     Scalar biggest_req_eps = 0.;
     vector<pair<int, int>> list;
+
+    bool need_to_recompute();
 };
