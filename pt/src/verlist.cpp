@@ -5,7 +5,11 @@ VerList::VerList(const Config &_config, const PAtoms &_p_atoms)
     : p_atoms(_p_atoms) {
 
     eps_upper_bound = _config.verlet_list_max_eps;
-    reference_pos = Vec3DArray::Zero(_p_atoms.n, 3);
+    old_positions = Vec3DArray::Zero(_p_atoms.n, 3);
+
+    native_contacts = _p_atoms.native_contacts;
+    sort(native_contacts.begin(), native_contacts.end());
+    native_contacts.emplace_back(_p_atoms.n + 1, _p_atoms.n + 1);
 }
 
 /*
@@ -25,14 +29,25 @@ void VerList::take_step() {
     if (need_to_recompute()) {
         list = {};
         Vec3DArray const& pos = p_atoms.der[0];
-        auto cutoff_sq = pow(biggest_req_eps, 2);
+        old_positions = pos;
+        vector<FatBool> const& connected = p_atoms.connected;
+        Scalar cutoff_sq = pow(biggest_req_eps + verlet_cutoff, 2);
 
-        // Are klist,kcist, krist etc. updates necessary for the prototype?
+        int native_it = 0;
         for (int i = 0; i < p_atoms.n; ++i) {
-            for (int j = i+1; j < p_atoms.n; ++j) {
+            int start_j = i + 2;
+            if (connected[i] && connected[i + 1]) start_j++;
+            for (int j = start_j; j < p_atoms.n; ++j) {
                 Vec3D dx = pos.row(i) - pos.row(j);
                 if (dx.squaredNorm() < cutoff_sq) {
-                    list.emplace_back(i, j);
+                    const pair<int, int> p{i, j};
+                    while (native_contacts[native_it] < p) {
+                        native_it++;
+                    }
+
+                    if (native_contacts[native_it] != p) {
+                        list.push_back(p);
+                    }
                 }
             }
         }
@@ -40,9 +55,9 @@ void VerList::take_step() {
 }
 
 bool VerList::need_to_recompute() {
-    auto offsets = reference_pos - p_atoms.der[0];
+    auto offsets = old_positions - p_atoms.der[0];
     Eigen::ArrayXd offsets_sqnorm = offsets.matrix().rowwise().squaredNorm();
-    Scalar max_allowed_dist = biggest_req_eps / 2; // code_notes.f:660
+    Scalar max_allowed_dist = verlet_cutoff / 2; // code_notes.f:660
     auto has_moved_enough = offsets_sqnorm > pow(max_allowed_dist, 2);
     return has_moved_enough.any();
 }

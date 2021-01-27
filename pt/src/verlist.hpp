@@ -35,9 +35,11 @@ public:
 
 private:
     const PAtoms &p_atoms;
-    Vec3DArray reference_pos;
+    Vec3DArray old_positions;
     Scalar eps_upper_bound;
     Scalar biggest_req_eps = 0.;
+    Scalar verlet_cutoff = 10.0_AA;
+    vector<pair<int, int>> native_contacts;
     vector<pair<int, int>> list;
 
     bool need_to_recompute();
