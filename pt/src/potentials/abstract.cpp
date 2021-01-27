@@ -8,6 +8,7 @@
 #include "structuredLJ.hpp"
 #include "localRepulsive.hpp"
 #include "harmonicTethering.hpp"
+#include "globalRepulsive.hpp"
 
 vector<unique_ptr<Potential>> all_supported_potentials(const Config &config,
                                                        const State &state,
@@ -18,5 +19,6 @@ vector<unique_ptr<Potential>> all_supported_potentials(const Config &config,
     all.emplace_back(make_unique<StructuredLJ>(config, state, p_atoms));
     all.emplace_back(make_unique<LocalRepulsive>(config, state, p_atoms));
     all.emplace_back(make_unique<HarmonicTethering>(config, state, p_atoms));
+    all.emplace_back(make_unique<GlobalRepulsive>(config, state, p_atoms));
     return all;
 }

@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# This test runs cg.f with following potentials enabled:
-# bondAngle, dihAngle, structuredLJ, harmonicTethering, localRepulsive
+# This test runs cg.f on the first example,
+# but does 3 advances of rng state before simulation,
+# so that the case of global repulsion happens.
 
 # The number of steps ./cg simulates is 200*mstep (set in inputfile1)
 # By default, ./pt makes 200 steps, this can be changed in Config class now.

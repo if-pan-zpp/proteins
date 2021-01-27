@@ -35,20 +35,10 @@
 >            write(17,*) x0(ib), y0(ib), z0(ib)
 >         enddo
 > 
-2697a2731,2732
->         return ! disables evalcpot
->         
-3427a3463
-> 
-3730c3766
-<                         fce= 24.d0*r6*(1.d0-2.d0*r6)/r
----
->                         fce=0 ! disables global repulsion
-3769c3805
-<                         fce=fce+24.d0*r6*(1.d0-2.d0*r6)/r
----
->                         fce=0 ! disables global repulsion
-3775a3812
+3802a3836,3839
+>         unused=ran2(0) ! advance random state 3 times
+>         unused=ran2(0) ! because otherwise the global repulsive
+>         unused=ran2(0) ! case never happens
 > 
 4990a5028,5029
 >       INTEGER count

@@ -16,7 +16,6 @@ Vec3DArray LocalRepulsive::calculate_forces(const VerList &verlet_list) {
     const Vec3DArray &positions = p_atoms.der[0];
     const vector<FatBool> connected = p_atoms.connected;
     size_t residues = p_atoms.n;
-    vector<Scalar> native_distances = p_atoms.native_distances;
 
     for(size_t i = 0; i < residues - 2; i++) {
         if(connected[i] & connected[i+1]) {
