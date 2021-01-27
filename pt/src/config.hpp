@@ -19,7 +19,7 @@ public:
     Config(int argc, char **argv);
 
     // Angle potential:
-    bool angle_pot = true;
+    bool bond_angle_pot = true;
     bool dih_angle_pot = true;
     bool tabularized_angle_pot = false;
     bool harmonic_dih_pot = false;
@@ -49,4 +49,5 @@ public:
 
     // Testing (this is temporary)
     string test_input_file = ""; 
+    string test_output_file = "";
 };

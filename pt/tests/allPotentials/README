@@ -1,0 +1,12 @@
+This test should check if the prototype works with all potentials enabled 
+(all implemented by now).
+
+./script.sh copies the original cg.f file and applies a small patch 
+that disables potentials that are not implemented yet 
+and adds code that writes initial conditions to 'test_input.txt'
+and another piece of code that writes final conformation to 'test_output.txt'.
+
+Before running ./script.sh, one needs to copy the pt executable to this folder.
+
+It seems that passing the test means getting maximum difference in position
+of order 10^-6.

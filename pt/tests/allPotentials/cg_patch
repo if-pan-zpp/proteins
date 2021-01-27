@@ -1,0 +1,71 @@
+63a64,67
+> 
+>         INTEGER count
+>         common/randstate/count
+> 
+642a647
+> 
+1457a1463,1484
+> 
+>         open(16,file='test_input.txt',status='unknown')
+>         write(16,*) 'n', men
+>         write(16,*) 'rng_calls_cnt', count
+>         write(16,*) 'native_pos'
+>         do ib=1,men
+>            write(16,*) xn(ib), yn(ib), zn(ib)
+>         enddo
+>         write(16,*) 'positions'
+>         do ib=1,men
+>            write(16,*) x0(ib), y0(ib), z0(ib)
+>         enddo
+>         write(16,*) 'velocities'
+>         do ib=1,men
+>            write(16,*) x1(ib), y1(ib), z1(ib)
+>         enddo
+>         write(16,*) 'native_contacts'
+>         write(16,*) klont
+>         do ib=1,klont
+>            write(16,*) klist(1,ib), klist(2,ib)
+>         enddo
+> 
+2182a2210,2215
+>         open(17,file='test_output.txt',status='unknown')
+>         write(17,*) 'n', men
+>         do ib=1,men
+>            write(17,*) x0(ib), y0(ib), z0(ib)
+>         enddo
+> 
+2697a2731,2732
+>         return ! disables evalcpot
+>         
+3427a3463
+> 
+3433c3469
+<         do 495 i=1,men-1
+---
+>         do 495 i=1,0 ! disables i,i+1 and i,i+2
+3730c3766
+<                         fce= 24.d0*r6*(1.d0-2.d0*r6)/r
+---
+>                         fce=0 ! disables repulsion
+3769c3805
+<                         fce=fce+24.d0*r6*(1.d0-2.d0*r6)/r
+---
+>                         fce=0 ! disables repulsion
+3775a3812
+> 
+4990a5028,5029
+>       INTEGER count
+>       common/randstate/count
+4995a5035,5036
+>         count = 0
+> 
+5005a5047,5049
+> 
+>       count=count + 1
+>       
+6617c6661,6662
+<         write(iun,'(3f9.3)')x0(ib)*unit,y0(ib)*unit,z0(ib)*unit
+---
+>         ! write(iun,'(3f9.3)')x0(ib)*unit,y0(ib)*unit,z0(ib)*unit
+>          write(iun,'(3f12.6)')x0(ib),y0(ib),z0(ib)

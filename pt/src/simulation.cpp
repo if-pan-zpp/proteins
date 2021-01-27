@@ -11,10 +11,11 @@ Simulation::Simulation(const Config &config) :
         if (pot_ptr -> is_enabled()) potentials.emplace_back(move(pot_ptr));
     }
 
+    cout << "Number of enabled potentials: " << (int) potentials.size() << endl;
+
     for (auto &pot_ptr : potentials) pot_ptr -> init_and_register(verlet_list);
 
     forces = Vec3DArray::Zero(p_atoms.n, 3);
-    
     time_delta = config.delta;
 }
 
@@ -42,6 +43,6 @@ void Simulation::run() {
     
         statistics.take_step();
     }
-    cout << "POSITIONS:\n";
-    cout << p_atoms.der[0] << endl;
+
+    statistics.print_summary();
 }

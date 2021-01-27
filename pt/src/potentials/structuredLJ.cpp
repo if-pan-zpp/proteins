@@ -1,6 +1,6 @@
 #include "structuredLJ.hpp"
-
-
+#include <iostream>
+#include <iomanip>
 
 StructuredLJ::StructuredLJ(const Config &_config,
                            const State &_state,
@@ -12,7 +12,7 @@ StructuredLJ::StructuredLJ(const Config &_config,
     enabled = _p_atoms.native_contacts.size() > 0;
 
     // Calculate sigmas squared for native contacts.
-    const Vec3DArray &pos = _p_atoms.der[0];
+    const Vec3DArray &pos = _p_atoms.native_pos;
     const Scalar scaling_constant = pow(0.5, 1./3);
     for (const pair<int, int> &contact : _p_atoms.native_contacts) {
         int i = contact.first;
@@ -46,8 +46,16 @@ Vec3DArray StructuredLJ::calculate_forces(const VerList &verlet_list) {
         energy += 4.0 * sigma_by_r_6 * (sigma_by_r_6 - 1.0);
         Scalar force = 24.0 * sigma_by_r_6 * (1.0 - 2.0 * sigma_by_r_6) / r;
 
+        // If not for this check, we could avoid calculating r (one sqrt call).
         if (force > max_force) force = max_force;
         if (force < -max_force) force = -max_force;
+
+        force /= r;
+        forces.row(contact.i) += v.array() * force;
+        forces.row(contact.j) -= v.array() * force;
     }
+
+    // Send energy to statistics
+    
     return forces;
 }

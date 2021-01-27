@@ -7,4 +7,7 @@ Config::Config(int argc, char **argv) {
     if (argc > 1) {
         test_input_file = string(argv[1]);
     }
+    if (argc > 2) {
+        test_output_file = string(argv[2]);
+    }
 }

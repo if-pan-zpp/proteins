@@ -13,7 +13,7 @@ PAtoms::PAtoms(const Config &config) {
     native_pos = Eigen::ArrayX3d::Random(n, 3);
 
     // Read initial conditions from a test file.
-    if (config.test_input_file.length() > 0) {
+    if (!config.test_input_file.empty()) {
         n = -1;
         ifstream inp(config.test_input_file, ifstream::in);
 
@@ -57,7 +57,7 @@ PAtoms::PAtoms(const Config &config) {
                 for (int i = 0; i < cnt; ++i) {
                     int a, b;
                     inp >> a >> b;
-                    native_contacts.emplace_back(a, b);
+                    native_contacts.emplace_back(a - 1, b - 1);
                 }
             }
         }

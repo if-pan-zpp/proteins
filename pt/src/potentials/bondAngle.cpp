@@ -8,7 +8,7 @@ BondAngle::BondAngle(const Config &_config,
                      const PAtoms &_p_atoms) :
     Potential(_config, _state, _p_atoms) {
 
-    enabled = _config.angle_pot && (p_atoms.n > 2);
+    enabled = _config.bond_angle_pot && (p_atoms.n > 2);
     k_theta = _config.k_theta;
 
     const Vec3DArray &pos = p_atoms.native_pos;

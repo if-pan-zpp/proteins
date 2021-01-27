@@ -11,8 +11,12 @@ public:
                const PAtoms &_p_atoms);
 
     void take_step();
+    void print_summary();
 
 private:
     const State &state;
     const PAtoms &p_atoms;
+
+    // FOR TESTING:
+    const string test_output_file;
 };
