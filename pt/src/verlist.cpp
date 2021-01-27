@@ -5,6 +5,7 @@ VerList::VerList(const Config &_config, const PAtoms &_p_atoms)
     : p_atoms(_p_atoms) {
 
     eps_upper_bound = _config.verlet_list_max_eps;
+    reference_pos = Vec3DArray::Zero(_p_atoms.n, 3);
 }
 
 /*
@@ -40,9 +41,8 @@ void VerList::take_step() {
 
 bool VerList::need_to_recompute() {
     auto offsets = reference_pos - p_atoms.der[0];
-    auto offsets_sqnorm = offsets.rowwise().squaredNorm();
-
-    auto max_allowed_dist = biggest_req_eps / 2; // code_notes.f:660
+    Eigen::ArrayXd offsets_sqnorm = offsets.matrix().rowwise().squaredNorm();
+    Scalar max_allowed_dist = biggest_req_eps / 2; // code_notes.f:660
     auto has_moved_enough = offsets_sqnorm > pow(max_allowed_dist, 2);
     return has_moved_enough.any();
 }

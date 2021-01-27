@@ -29,12 +29,17 @@ Vec3DArray LocalRepulsive::calculate_forces(const VerList &verlet_list) {
                 Scalar r6 = pow(rsi, 6.);
                 Scalar energy = 4 * r6 * (r6 - 1) + 1;
                 Scalar force = 24 * r6 * (1 - 2 * r6) / dist;
-                forces.row(i) += diff_vec.array() * force;
-                forces.row(i+1) -= diff_vec.array() * force;
+                if (force > force_cap) force = force_cap;
+                if (force < -force_cap) force = -force_cap;
+                force /= -dist;
+                forces.row(i) -= diff_vec.array() * force;
+                forces.row(i+2) += diff_vec.array() * force;
             }
         }
 
     }
+
+    return forces;
 }
 
 bool LocalRepulsive::is_enabled() const {

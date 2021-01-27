@@ -1,5 +1,7 @@
 #include "harmonicTethering.hpp"
 #include <Eigen/Dense>
+#include <iostream>
+#include <iomanip>
 
 HarmonicTethering::HarmonicTethering(const Config &_config,
                      const State &_state,
@@ -8,7 +10,7 @@ HarmonicTethering::HarmonicTethering(const Config &_config,
 
     enabled = true;
     H1 = _config.H1;
-    H2 = _config.H1;
+    H2 = _config.H2;
 
 }
 
@@ -26,18 +28,19 @@ Vec3DArray HarmonicTethering::calculate_forces(const VerList &verlet_list) {
             Scalar dist_change = dist - native_distances[i];
             Scalar sq_dist_change = dist_change * dist_change;
             Scalar energy = (H1 + H2 * sq_dist_change) * sq_dist_change;
-            Scalar force = (2 * H1 + 4 * H2 * dist_change) * dist_change;
-            if(force > force_cap) {
-                force = force_cap;
-            } else if(force < -force_cap) {
-                force = -force_cap;
-            }
+            Scalar force = (2 * H1 + 4 * H2 * sq_dist_change) * dist_change;
+
+            if(force > force_cap) force = force_cap;
+            else if(force < -force_cap) force = -force_cap;
+
             force /= -dist;
-            forces.row(i) += diff_vec.array() * force;
-            forces.row(i+1) -= diff_vec.array() * force;
+            forces.row(i) -= diff_vec.array() * force;
+            forces.row(i+1) += diff_vec.array() * force;
         }
 
     }
+
+    return forces;
 }
 
 bool HarmonicTethering::is_enabled() const {

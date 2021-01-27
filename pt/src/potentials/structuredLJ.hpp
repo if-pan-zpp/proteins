@@ -11,7 +11,7 @@ public:
     bool is_enabled() const override;
 private:
     bool enabled = false;
-    const Scalar max_force = 1000.0;
+    const Scalar force_cap = 1000.0;
     const Scalar r_cut, r_cut_sq; // Cut-off distance for this potential.
 
     struct native_contact {

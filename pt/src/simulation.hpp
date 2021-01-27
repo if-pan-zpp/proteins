@@ -22,12 +22,12 @@ public:
 private:
 
     State state;
-    VerList verlet_list;
     PAtoms p_atoms;
-    vector<shared_ptr<Potential>> potentials;
+    VerList verlet_list;
     Integrator integrator;
     Statistics statistics;
 
+    vector<shared_ptr<Potential>> potentials;
     Vec3DArray forces;
 
     Scalar time_delta;

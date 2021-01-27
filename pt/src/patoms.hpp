@@ -26,7 +26,6 @@ public:
     vector<u_int16_t> neighbours; // number of neighbours of residue
     Vec3DArray native_pos;
     vector<Scalar> native_distances;
-
     vector<pair<int, int>> native_contacts;
 
     // For testing, temporary. It's the number of times

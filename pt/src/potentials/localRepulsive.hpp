@@ -12,4 +12,5 @@ public:
 private:
     bool enabled;
     Scalar repulsive_cutoff;
+    Scalar force_cap = 1000.0;
 };

@@ -47,8 +47,8 @@ Vec3DArray StructuredLJ::calculate_forces(const VerList &verlet_list) {
         Scalar force = 24.0 * sigma_by_r_6 * (1.0 - 2.0 * sigma_by_r_6) / r;
 
         // If not for this check, we could avoid calculating r (one sqrt call).
-        if (force > max_force) force = max_force;
-        if (force < -max_force) force = -max_force;
+        if (force > force_cap) force = force_cap;
+        if (force < -force_cap) force = -force_cap;
 
         force /= r;
         forces.row(contact.i) += v.array() * force;

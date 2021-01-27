@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This test runs cg.f with following potentials enabled:
-# bondAngle, dihAngle, structuredLJ
+# bondAngle, dihAngle, structuredLJ, harmonicTethering, localRepulsive
 
 # The number of steps ./cg simulates is 200*mstep (set in inputfile1)
 # By default, ./pt makes 200 steps, this can be changed in Config class now.

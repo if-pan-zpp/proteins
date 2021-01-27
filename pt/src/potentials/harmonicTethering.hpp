@@ -13,5 +13,5 @@ private:
     bool enabled;
     Scalar H1;
     Scalar H2;
-    Scalar force_cap = 1000;
+    Scalar force_cap = 1000.0;
 };
