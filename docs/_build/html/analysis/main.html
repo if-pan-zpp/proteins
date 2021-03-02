@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Main/global code &#8212; Proteins  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Functions" href="functions.html" />
+    <link rel="prev" title="Analysis of legacy code" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="main-global-code">
+<h1>Main/global code<a class="headerlink" href="#main-global-code" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The code (<code class="docutils literal notranslate"><span class="pre">code_notes.f</span></code>, which is <code class="docutils literal notranslate"><span class="pre">cg.f</span></code> but linted and with added inline comments), takes a form of an initial “imperative” header, i.e. global/main code, followed by a sequence of subroutine definitions. For the sake of focus we shall extract the main part into <code class="docutils literal notranslate"><span class="pre">splices/main.f</span></code>. It takes ~2.5k lines, and some general comments are provided.</p>
+</div>
+<div class="section" id="preparation">
+<h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline">¶</a></h2>
+<p>First, variables are declared (lines 1-72), and the initial values are specified (lines 74-273). Then, an input file is read: the program itself is executed, according to README.txt, as <code class="docutils literal notranslate"><span class="pre">./cg</span> <span class="pre">inputfile</span></code> (line 37), so the <code class="docutils literal notranslate"><span class="pre">inputfile</span></code> string is extracted (lines 275-279). Apparently the switch at line 275 indicates that we may choose not specify the input file. At any rate, lines 278-621 parse the key-value pairs in a standard fashion, inexcept for:</p>
+<ul class="simple">
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">mapfile</span></code>, which also sets <code class="docutils literal notranslate"><span class="pre">lwritemap</span></code> to true;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">cmapf</span></code>, which also sets <code class="docutils literal notranslate"><span class="pre">lcmap</span></code> to true;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">lecperm</span></code>, which also initializes? <code class="docutils literal notranslate"><span class="pre">coul</span></code> to 210;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">displace</span></code> – this one, as described in README.txt, takes the numbers of the chains (<code class="docutils literal notranslate"><span class="pre">iprota</span></code>, <code class="docutils literal notranslate"><span class="pre">iprotb</span></code>), and the desired displacement distance <code class="docutils literal notranslate"><span class="pre">away</span></code>; also, <code class="docutils literal notranslate"><span class="pre">ldisp</span></code> is set to true;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">paramfile</span></code>, which also sets <code class="docutils literal notranslate"><span class="pre">lparam</span></code> to true;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">period</span></code> or <code class="docutils literal notranslate"><span class="pre">omega</span></code>, which are physically the same (except for scaling etc.);</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">bbrm</span></code>, <code class="docutils literal notranslate"><span class="pre">ssrm</span></code>, <code class="docutils literal notranslate"><span class="pre">bsrm</span></code>, <code class="docutils literal notranslate"><span class="pre">i4rm</span></code>. (TODO: Write a separate section on <code class="docutils literal notranslate"><span class="pre">sigma1</span></code>);</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">temp</span></code>, which sets to its value variables <code class="docutils literal notranslate"><span class="pre">tstart</span></code> and <code class="docutils literal notranslate"><span class="pre">tend</span></code> – there is no variable <code class="docutils literal notranslate"><span class="pre">temp</span></code> on its own;</p></li>
+<li><p>setting <code class="docutils literal notranslate"><span class="pre">file</span></code>, which sets <code class="docutils literal notranslate"><span class="pre">outfile</span></code>, <code class="docutils literal notranslate"><span class="pre">mapfile</span></code> and <code class="docutils literal notranslate"><span class="pre">savfile</span></code> to the name but with suffixes.</p></li>
+</ul>
+<p>Then (line 622) variables are loaded from a parameter file (in a separate subroutine <code class="docutils literal notranslate"><span class="pre">load_paramfile</span></code>, why aren’t the input file variables also in a separate subroutine?).</p>
+<p>Angles <code class="docutils literal notranslate"><span class="pre">the0</span></code> and <code class="docutils literal notranslate"><span class="pre">phi0</span></code> are reset, and <code class="docutils literal notranslate"><span class="pre">lfrompdb</span></code> is cleared (lines 624-626). This variable, I presume, is used for computing angle potentials, and <code class="docutils literal notranslate"><span class="pre">lsimpang=.true.</span></code> should mark the use of simple angle potentials. If <code class="docutils literal notranslate"><span class="pre">lpbc</span></code> is true, periodic boundary conditions are used on all planes (is this “turn on/off for each axis” functionality ever used?) (lines 628-632). Lines 634-641 are for the most part documented. Then, for some reason <code class="docutils literal notranslate"><span class="pre">#I,I+2</span> <span class="pre">CONTACTS</span> <span class="pre">PURELY</span> <span class="pre">REPULSIVE</span></code> is written (unless there’s some jump there? I don’t see it). The relevant variables are scaled (in the code, according to CPC14.pdf, units are 5 A for distance, :math`varepsilon approxeq` 1.5 kcal/mol for energy, approxeq 1ns for time are used).</p>
+<p>Then, we “set up the table of temperature” in lines 689-696. More specifically, we can specify (via the use of different <code class="docutils literal notranslate"><span class="pre">tstart</span></code> and <code class="docutils literal notranslate"><span class="pre">tend</span></code> in the input file) to have the ambient temperature of the solution change, linearly in at most 150 stages (<code class="docutils literal notranslate"><span class="pre">tstep</span></code> declares the desired temperature change in one step). In this sense, the temperature progression is not linear per se, but rather “stratified”, like a ceil function.</p>
+<p>The next section is titled as such (line 701). The lines 702-719 about loading from either PDB file or a sequence file. In the former case, <code class="docutils literal notranslate"><span class="pre">load_protein</span></code> is invoked; in the latter, <code class="docutils literal notranslate"><span class="pre">load_sequence</span></code> followed by <code class="docutils literal notranslate"><span class="pre">confstart</span></code>. Also, <code class="docutils literal notranslate"><span class="pre">x0..</span></code> and <code class="docutils literal notranslate"><span class="pre">xn..</span></code> are made to be the same. Let us speak of these, because it’s confusing. <code class="docutils literal notranslate"><span class="pre">x0..</span></code> and <code class="docutils literal notranslate"><span class="pre">xn..</span></code> are supposed to represent, respectively, <em>actual</em> and <em>native</em> coordinates (line 942). The question, then, is why:</p>
+<ul class="simple">
+<li><p>these are, in some sense, reset at one point (lines 1254-1267);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xn..</span></code> are used for computing force when using AFM protocol (lines 1347-1349).</p></li>
+</ul>
+<p>In general, the matter of the stages before the simulation proper is strange (in my estimation); we will return to the matter later.</p>
+<p>Having the sequences and coordinates, we construct contact maps (lines 721-736). Lines 737-740 set <code class="docutils literal notranslate"><span class="pre">ipwn</span></code>, which is supposed to be the number of residues “sticked to wall” (whatever that means) (line 229). As for the formula (line 738), I don’t really understand why it’s the way it is (especially with the cubic roots and whatnot). Then (lines 741) we build “titin”, but from what I have seen this part is essentially not used. In lines 749-758, residue masses are set. Next part (lines 759-792) set up some auxiliary variables, mostly regarding the “simulation box”. Line 793 sets appropriate contact type for the setting where “residues are connected to walls one by one”; I will for now skip anything regarding the walls. Then (line 794) Verlet list(s) are updated.</p>
+<p>In lines 795-809 there’s something about “contact orders”. <code class="docutils literal notranslate"><span class="pre">krist</span></code> is an array containing repulsive contacts (presumably derived from the distances, the only place where <code class="docutils literal notranslate"><span class="pre">krist</span></code> is set are lines 4462-4465 of <code class="docutils literal notranslate"><span class="pre">code_notes.f</span></code>, in <code class="docutils literal notranslate"><span class="pre">update_verlet_list</span></code>). From the analysis of these lines, <code class="docutils literal notranslate"><span class="pre">corder</span></code> as of line 806 is the relative distance in residue indices between repulsive contacts. Interestingly, if <code class="docutils literal notranslate"><span class="pre">icor</span></code> is 0, a message <code class="docutils literal notranslate"><span class="pre">#NO</span> <span class="pre">NON-REPULSIVE</span> <span class="pre">CONTACTS</span></code> is written, but in <code class="docutils literal notranslate"><span class="pre">update_verlet_list</span></code> where new entries are added, there’s <code class="docutils literal notranslate"><span class="pre">!</span> <span class="pre">REPULSIVE</span> <span class="pre">CONTACT</span></code>, so I don’t know. For that matter, I haven’t seen <code class="docutils literal notranslate"><span class="pre">corder</span></code> used in a “functionally relevant way”, only printed, for example in line 2137. Lines 810-821 are much the same, but about “native contacts”.</p>
+<p>Lines 823-854 are about disulfide bridges: for every one, residues are checked whether they are indeed cysteines, and if these bonds are not to be treated as normal (<code class="docutils literal notranslate"><span class="pre">lsslj</span></code>) or exclusive (<code class="docutils literal notranslate"><span class="pre">llsselj</span></code>) L-J contacts, the relevant contact (from <code class="docutils literal notranslate"><span class="pre">klist</span></code>) is set to have a “type” +=631, for some reason.</p>
+<p>Lines 857-878 do some logging, it’s sort of irrelevant. Lines 882-894 do some further scaling (why it’s not in the previous scaling section is unclear, perhaps the subroutines set these values, but then why aren’t the values set by subroutines made scaled by default?).</p>
+<p>Chirality potentials are optionally computed (line 901), much like the native angles (if the residues were loaded from a PDB file), in line 916. In lines 918-938, according to the message, we “disable native contacts (I, I+2)”. In CPC14.pdf (p. 5?), interactions between so close residues are regarded as “local”, as opposed to “non-local” interactions which the contact maps service - thus we remove such contacts, if they occur. This (lines 924-929) is also the place where dynamic SS bonds are logged (note that <code class="docutils literal notranslate"><span class="pre">ijdiff</span></code> is set to zero, so unless <code class="docutils literal notranslate"><span class="pre">.not.lconect(i)</span></code>, the later code is ignored).</p>
+<p>Lines 940-957 do some further initialization. For some reason, glutamines are counted; I checked where <code class="docutils literal notranslate"><span class="pre">ngln</span></code> may be used, and it’s apparently just logged for whatever (presumably debug) reason. Lines 958-971 set up the sidechain types if the chains are to be charged; further elaboration may be required, but I don’t know where precisely the electrostatic forces are used so whatever. Lines 973-985 chiefly set up <code class="docutils literal notranslate"><span class="pre">b</span></code> array (which makes it hard to search for references); this array contains distances of consecutive Ca-Ca bonds.</p>
+<p>Then (lines 987-1012), we essentially prepare other stuff (again, why was the “free-floating” stuff also not extracted into subroutines? Not that merely extracting code and putting it in a subroutine is good, but for example <code class="docutils literal notranslate"><span class="pre">gopotential</span></code> is like that, so it’s not like it’s consistent). In order, we call <code class="docutils literal notranslate"><span class="pre">gopotential</span></code> (and potentially print it), <code class="docutils literal notranslate"><span class="pre">prepare</span></code>, <code class="docutils literal notranslate"><span class="pre">evalgo</span></code>, <code class="docutils literal notranslate"><span class="pre">evalwall</span></code>, <code class="docutils literal notranslate"><span class="pre">evalimproper</span></code> (or <code class="docutils literal notranslate"><span class="pre">evalcpot</span></code> depending on <code class="docutils literal notranslate"><span class="pre">lpid</span></code>), <code class="docutils literal notranslate"><span class="pre">evalangles</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_chirality</span></code> (not sure what line 1008 is doing). Lines 1013-1070 are preoccupied with logging a lot of stuff. Then we rescale another parameters (another scaling section) (lines 1073-1097). Lines 1102-1111 print out the successive temperatures (see <code class="docutils literal notranslate"><span class="pre">tstart</span></code>, <code class="docutils literal notranslate"><span class="pre">tend</span></code>).</p>
+</div>
+<div class="section" id="main-loop">
+<h2>Main loop<a class="headerlink" href="#main-loop" title="Permalink to this headline">¶</a></h2>
+<p>Lines 1113-1151 set some parameters up. Then (starts at line 1156), we get to the “meat” of the program, i.e. looping over the <code class="docutils literal notranslate"><span class="pre">ntraj</span></code> starting configurations. Lines 1157-1236 for the most part “merely” reset the variables (presumably across the various trajectories); some assignments are annotated. (Note: an explanation for the role of <code class="docutils literal notranslate"><span class="pre">*resist</span></code> variables is sorely needed).</p>
+<p>Then, we have a “starting conformation” phase (lines 1238-1267). Here we have (I think first?) example of simulation protocols. If we perform a folding simulation (<code class="docutils literal notranslate"><span class="pre">lconftm</span></code> or <code class="docutils literal notranslate"><span class="pre">lmedian</span></code> true), then we want the “straight line” starting configuration. For <code class="docutils literal notranslate"><span class="pre">lwarmup</span></code> true, we set the positions to the native ones <em>for the first trajectory</em>, and otherwise for every trajectory if the residues have a native structure. If not, we call <code class="docutils literal notranslate"><span class="pre">confstart</span></code> (which initializes the locations), and save them into the native coordinates array <code class="docutils literal notranslate"><span class="pre">xn..</span></code>.</p>
+<p>In the next order, we (optionally) displace the chains (line 1269). Lines 1271-1300 are about the variables for periodic boundary conditions (hard to say at this moment how they are used). Lines 1301-1338 compute wall stuff. We apparently set up arrays for sorting residues with respect to z-axis (lines 1305-1311); if I remember correctly, it’s so that we can sort the residues for attaching checking whether they should be attached to xy-plane walls <em>somewhere</em>. Lines 1312-1337 are triggered if we want to simulate squeezing the simulation box to reach desired density. Lines 1339-1344 save original simulation box planes, which are used later. Then (1346-1357) “the direction of force” is computed (for AFM stretching simulation). Speaking of AFM stretching simulation, we can set <code class="docutils literal notranslate"><span class="pre">lvelo</span></code> from the input file, but not <code class="docutils literal notranslate"><span class="pre">lforce</span></code>, seems like an unfinished feature. If said stretching is to have constant velocity (<code class="docutils literal notranslate"><span class="pre">lvelo</span></code>), we set up max residue length (of course, if the residue is already maximally extended, there’s no point in stretching), and <code class="docutils literal notranslate"><span class="pre">xpul..</span></code> variables (places where the “tip” is attached?).</p>
+<p>Then (line 1375-) we initialize the velocities, set <code class="docutils literal notranslate"><span class="pre">kb0</span></code> to zero (not sure what this variable is for exactly, as with <code class="docutils literal notranslate"><span class="pre">sep0</span></code>). In lines 1376-1397 we “zero the connection tables”; from the commented-out line 956, and the later occurences of the variable, <code class="docutils literal notranslate"><span class="pre">khbful</span></code> seems to have something to do with the current number of bonds that a residue may have with other residues. <code class="docutils literal notranslate"><span class="pre">nei</span></code> is the neighbour counter (see line 952). If dynamic SS bonds are disabled, we set them up from the array of static ones in lines 1388-1397.</p>
+<p>Lines 1398-1460 restore the state from a reset file; other than the fact that it’s done manually, there’s (in my estimation) nothing sophisticated about it. Lines 1462-1486 in some sense replicate lines 997-1009, so the question would be why were these invoked before the trajectory loop (perhaps to initialize some auxiliary variables? not sure). Then we scale accelerations for some reason (lines 1489-1493); in lines 1496-1535 just log stuff. In lines 1537-1568, we simulate pulling with an AFM for some time (<code class="docutils literal notranslate"><span class="pre">mpull</span></code>) before finally stopping. In some sense this is interesting, because such pulling shouldn’t necessarily be any different from normal AFM simulation (except for being limited), and because the code is fairly concise – we may therefrom gain more insight into the role each part plays in the “main simulation” part below.</p>
+<p>Thus we enter “main loop of simulation”. Lines 1574-1576 indicate, that <code class="docutils literal notranslate"><span class="pre">kb0</span></code> is the initial “frame number” for the simulation proper, and that <code class="docutils literal notranslate"><span class="pre">kb</span></code> is the current frame. Lines 1578-1612 follow a previously-seen formula (like 1541-1559), but now we account for <code class="docutils literal notranslate"><span class="pre">lmass</span></code> option, and there are modifications in 1601-1604. More specifically, <code class="docutils literal notranslate"><span class="pre">lsldh</span></code> is for “slowly turning on dihedral potential.</p>
+<p>Lines 1613-1903 are for “equilibration”. Lines 1613-1872 handle the equilibration frames; for the most part this phase seems to apply only if the simulation protocol includes walls (lines 1615-1849), followed by lines 1851-1854 which I’m not sure what they do, followed by “applying” force in lines 1856-1871 (for AFM protocol, from what I see). (TODO: finish this part, as I can’t be bothered to analyze it now and it isn’t relevant for the first prototype except for the lines 1851-1854 perhaps).</p>
+<p>Lines 1905-1933 are supposed to “measure the force to walls (A and D)”, which in particular has a lot of stuff about <code class="docutils literal notranslate"><span class="pre">*resist</span></code> variables, so frankly I don’t know what is going on here. It may, however, be helpful in understanding these variables. Lines 1935-1938 handle counting the formation of native contacts; in particular, if all are formed, we break the simulation (this might be slightly modified depending on the type of SS formation). Line 1939 skips certain simulation steps (interestingly it’s only <em>after</em> the whole equilibration thing). Lines 1941-1943 seem unfinished. Lines 1945-1971 are annotated by default, wherefore I shall omit their description here. Lines 1973-1992 handle that custom trick that Mioduszewski spoke of for reducing the number of Verlet list recomputations needed (?).</p>
+<p>Lines 1996-2010 refer to “recording average force when pulling with AFM with constant velocity” (and line 2001, initializing <code class="docutils literal notranslate"><span class="pre">ree</span></code>, may be of use for stopping simulation if the chain is maximally stretched, as mentioned before). Lines 2012-2027 apparently do something similar? but for the walls, I guess, I don’t know. Lines 2029-2201 are apparently “only” for logging stuff to output files, so I’d say they aren’t really relevant. Lines 2203-2209 “compute thermodynamic properties” (if the docs for <code class="docutils literal notranslate"><span class="pre">lthermo</span></code> are anything to go by); lines 2211-2213 have annotations, and 2214-2218 are I believe about recording median folding times (in particular <code class="docutils literal notranslate"><span class="pre">goto</span> <span class="pre">533</span></code> returns to the beginning of the simulation loop proper at line 1575). The rest is logging stuff and loop structures.</p>
+</div>
+<div class="section" id="remarks">
+<h2>Remarks<a class="headerlink" href="#remarks" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Given the very end of the “main” section, specifically the line 2420 with <code class="docutils literal notranslate"><span class="pre">2000</span> <span class="pre">continue</span></code> (which refers to the temperature loop), and the comment above, it would “seem” that in general the loop structure is over <em>temperatures</em>, then over trajectories, and then over simulation steps. The fact that it’s over <em>temperatures</em> is somewhat strange in my estimation, so perhaps I am incorrect in this analysis.</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proteins</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Project overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Analysis of legacy code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#sources">Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#incremental-design-and-code-coverage">Incremental design and code coverage</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#fortran-77-source-code-documentation">Fortran 77 source code documentation</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Analysis of legacy code</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Analysis of legacy code</a></li>
+      <li>Next: <a href="functions.html" title="next chapter">Functions</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, IF PAN, ZPP Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/analysis/main.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

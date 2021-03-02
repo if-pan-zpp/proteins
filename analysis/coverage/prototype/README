@@ -1,0 +1,7 @@
+cg_org.f is the original cg.f with a very small number of lines changed, so that
+the features that are not important for the prototype are dropped.
+
+cg_reduced.f is the cg.f with a lot of code cut out, so that only features
+important for the prototype remain.
+
+Both of the programs give the same results for the first example.

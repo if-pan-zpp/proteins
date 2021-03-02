@@ -1,0 +1,3 @@
+[submodule "cg-v2"]
+	path = cg-v2
+	url = https://github.com/if-pan-zpp/cg-v2

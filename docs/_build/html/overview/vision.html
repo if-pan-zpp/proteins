@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vision (Nov 2020) &#8212; Proteins  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Analysis of legacy code" href="../analysis/index.html" />
+    <link rel="prev" title="Project overview" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="vision-nov-2020">
+<h1>Vision (Nov 2020)<a class="headerlink" href="#vision-nov-2020" title="Permalink to this headline">¶</a></h1>
+<p>Note: a more in-depth version of this document is available (in Polish).</p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This document describes the scope of the project of rewriting a protein simulation program based on a model created at IF PAN.</p>
+<div class="section" id="definitions">
+<h3>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Model - a model of the dynamics of proteins created at IF PAN;</p></li>
+<li><p>Reference implementation - an existing implementation of the simulation based on the model, namely a single source file written in Fortran77;</p></li>
+<li><p>Rewrite - a program, whose implementation is the end goal of this project;</p></li>
+<li><p><em>Pseudo-improper-dihedral</em> (PID) and quasi-adiabatic potentials - two of the available potentials for governing the dynamics of the unstructured parts of proteins.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="context">
+<h2>Context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="description-of-the-product">
+<h3>Description of the product<a class="headerlink" href="#description-of-the-product" title="Permalink to this headline">¶</a></h3>
+<p>The program simulates structured, unstructured and partially structured proteins in a coarse-grained model. The reference implementation has been used in many research papers.</p>
+</div>
+<div class="section" id="functionality">
+<h3>Functionality<a class="headerlink" href="#functionality" title="Permalink to this headline">¶</a></h3>
+<p>The program simulates proteins in a coarse-grained model, i.e. entire residues are represented as single beads. For structured proteins, Go model for the potential is used, whereas for unstructured parts either PID or quasi-adiabatic potential is used.</p>
+<ul class="simple">
+<li><p>PID potential is more accurate, and more computationally expensive, wherefore it is chiefly used in the simulation of smaller systems;</p></li>
+<li><p>quasi-adiabatic potential is less accurate and less computationally expensive, recommended for the simulation of larger structures.</p></li>
+</ul>
+<p>Additional features include performing the simulation on a 2D plane, introduction of repulsive or attractive walls, simulation of ATF stretching the proteins, inclusion of periodic boundary conditions. Also, restart files, contact maps, statistics and current geometry of the system can be periodically saved. The geometry is saved in a standard format, making it possible to view it by, for example, VMD.</p>
+<p>The program is on an MIT license.</p>
+</div>
+<div class="section" id="drawbacks">
+<h3>Drawbacks<a class="headerlink" href="#drawbacks" title="Permalink to this headline">¶</a></h3>
+<p>Due to the obsolescence of Fortran77, long lifetime of the program and its development by many parties made its code hard to comprehend. The complexity of the code and a high degree of interdependence of its parts make modifying the program very difficult. Moreover, the degree of the parallelization of the program is insufficient – at best, 4 CPU cores can be used to speed it up.</p>
+<div class="section" id="quality-of-the-source-code">
+<h4>Quality of the source code<a class="headerlink" href="#quality-of-the-source-code" title="Permalink to this headline">¶</a></h4>
+<p>In its current form, the source code of the program is near-incomprehensible. The variable names, due to the need for their brevity caused by the hard limit on the number of columns in Fortran77, in most cases do not help understand their purpose. Some subroutines are extremely long, and most of the code is uncommented. Due to Fortran77, in many circumstances <cite>goto</cite> instruction must be used, which further obfuscates the code. Last, some fragments of the code have been commented out by the authors.</p>
+</div>
+</div>
+<div class="section" id="alternatives">
+<h3>Alternatives<a class="headerlink" href="#alternatives" title="Permalink to this headline">¶</a></h3>
+<p>There are many programs for simulating proteins, all of which approximate the true dynamics of the system in different ways, making direct comparisons between them difficult – in short, they server different purposes.</p>
+<p>Moreover, neither of the other programs includes PID and quasi-adiabatic potentials to be used. Although some of them allow for the introduction of custom forces, none of them provide a mechanism for creating contacts dynamically.</p>
+</div>
+</div>
+<div class="section" id="the-goal-of-the-project">
+<h2>The goal of the project<a class="headerlink" href="#the-goal-of-the-project" title="Permalink to this headline">¶</a></h2>
+<p>The goal of the project is to create a rewrite of the reference implementation in C++ programming language, whilst preserving the correctness of the results. The rewrite should not be <em>significantly</em> slower than the reference implementation, and should include the possibility of parallelizing the computation with OpenMP. Optional goals include the implementation on MPI and with GPUs.</p>
+<div class="section" id="benefits">
+<h3>Benefits<a class="headerlink" href="#benefits" title="Permalink to this headline">¶</a></h3>
+<p>The rewrite is to be written using a modern programming language and modern development techniques, which should make its use and modification easier. Moreover, by unit testing the code, the results shall be more trustworthy, and the modification of the code less error-prone. Improved parallelization capabilities will allow for a reduction in simulation times, and for the simulation of even larger systems.</p>
+</div>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="key-requirements">
+<h3>Key requirements<a class="headerlink" href="#key-requirements" title="Permalink to this headline">¶</a></h3>
+<p>In the order of decreasing priority:</p>
+<ol class="arabic simple">
+<li><p>Correctness of the results – for all systems, the reference implementation and the rewrite should produce statistically equivalent trajectories, i.e. expected simulation statistics over many samples of the program should be equivalent;</p></li>
+<li><p>Modularity and flexibility of the source code – including full test coverage;</p></li>
+<li><p>Readability of the code – including full documentation, instruction for running a simulation, and descriptive error messages;</p></li>
+<li><p>Improved parallelization – the rewrite should in particular be able to use more than 4 CPUs;</p></li>
+<li><p>Single-core performance – the rewrite should not be slower by more than 100% when compared to the reference implementation, on 1 CPU.</p></li>
+</ol>
+</div>
+<div class="section" id="optional-requirements">
+<h3>Optional requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>MPI integration;</p></li>
+<li><p>GPU integration;</p></li>
+<li><p>Improving performance – by using faster equivalent algorithms.</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="human-aspect-of-the-project">
+<h2>“Human” aspect of the project<a class="headerlink" href="#human-aspect-of-the-project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="clients">
+<h3>Clients<a class="headerlink" href="#clients" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 36%" />
+<col style="width: 39%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Occupation</p></th>
+<th class="head"><p>Role</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Łukasz Mioduszewski</p></td>
+<td><p>PhD candidate, IF PAN</p></td>
+<td><p>Contractor</p></td>
+</tr>
+<tr class="row-odd"><td><p>Marek Cieplak</p></td>
+<td><p>Professor, IF PAN</p></td>
+<td><p>Contractor</p></td>
+</tr>
+<tr class="row-even"><td><p>Jacek Sroka</p></td>
+<td><p>Researcher, WMIM UW</p></td>
+<td><p>Proseminar TA</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="users">
+<h3>Users<a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h3>
+<p>Users of the product include researchers over at IF PAN and beyond, who may want to be involved in expanding the program in the future, as well as using it for research.</p>
+</div>
+<div class="section" id="user-environment">
+<h3>User environment<a class="headerlink" href="#user-environment" title="Permalink to this headline">¶</a></h3>
+<p>The user should be able to run the program on a standard-issue PC. They should also be capable of modifying the program and releasing the modifications.</p>
+</div>
+</div>
+<div class="section" id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<p>Due to the use of floating-point arithmetic and the nondeterminism of the used algorithms, the results of the simulation may not necessarily be identical with the same input. Because of this, the correctness of the program may only be verified statistically.</p>
+</div>
+<div class="section" id="milestones">
+<h2>Milestones<a class="headerlink" href="#milestones" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="analysis-of-the-legacy-code">
+<h3>Analysis of the legacy code<a class="headerlink" href="#analysis-of-the-legacy-code" title="Permalink to this headline">¶</a></h3>
+<p><strong>Deadline</strong>: Dec 3, 2020</p>
+<p>A complete description of the reference implementation is created. This description should include:</p>
+<ul class="simple">
+<li><p>Semantics of all procedures, functions and global variables;</p></li>
+<li><p>Delineation of the source code into independent modules;</p></li>
+<li><p>Profiling the code;</p></li>
+<li><p>List of simulation parameters.</p></li>
+</ul>
+</div>
+<div class="section" id="prototype-i">
+<h3>Prototype I<a class="headerlink" href="#prototype-i" title="Permalink to this headline">¶</a></h3>
+<p><strong>Deadline</strong>: Jan 7, 2021</p>
+<p>A program is created, capable of running the first example (ubiquitin, a completely structured protein). Improved parallelization should be apparent even at this stage. Required functionality includes:</p>
+<ul class="simple">
+<li><p>Kernel of the simulation;</p></li>
+<li><p>Potentials for structured parts;</p></li>
+<li><p>Parsing PDB files, including derivation of contact maps;</p></li>
+<li><p>Initial geometry of the model.</p></li>
+</ul>
+</div>
+<div class="section" id="prototype-ii">
+<h3>Prototype II<a class="headerlink" href="#prototype-ii" title="Permalink to this headline">¶</a></h3>
+<p><strong>Deadline</strong>: Feb 25, 2021</p>
+<p>A program is extended as to run the second example simulation. Required functionality includes:</p>
+<ul class="simple">
+<li><p>Full output (restarts, statistics etc.);</p></li>
+<li><p>PID potential based on a given M-J matrix;</p></li>
+<li><p>ATF stretching implemented.</p></li>
+</ul>
+</div>
+<div class="section" id="complete-program">
+<h3>Complete program<a class="headerlink" href="#complete-program" title="Permalink to this headline">¶</a></h3>
+<p><strong>Deadline</strong>: May 27, 2021</p>
+<p>Entire program, along with the complete documentation and with full test coverage, are created.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proteins</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Project overview</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Vision (Nov 2020)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis/index.html">Analysis of legacy code</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Project overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Project overview</a></li>
+      <li>Next: <a href="../analysis/index.html" title="next chapter">Analysis of legacy code</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, IF PAN, ZPP Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/overview/vision.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

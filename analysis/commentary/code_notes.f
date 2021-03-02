@@ -654,7 +654,7 @@ c     dfold=dfold/unit
       rneisq=rnei*rnei
 c     bckbmin=bckbmin*bckbmin
 c     bckb2min=bckb2min*bckb2min
-      sdchnmax=sdchnmax*sdchnmax
+      sdchnmax=sdchnmax*sdchnmax ! Because we actually use a square in evalcpot.
       verlcut=verlcut/unit
       confcut=confcut/unit
       vrcut2sq=verlcut*verlcut/4.d0
@@ -2753,22 +2753,30 @@ C   THIS SUBROUTINE COMPUTE THE ENERGY AND FORCE OF THE CUSTOM POTENTIAL
 !$omp& jt2,itype,jtype,lki,lkj,icheck,lssn,kss,lss,kqadabs)
 !$omp do reduction(+:epot,intehc,intrhc,intesc,intrsc,ncord,icnss,icdss)
       do 466 k=1,kqont          ! non-native attractive contacts
-         lss=.false.
          kqistabs=abs(kqist(4,k,jq))
          kqadabs=abs(kqist(3,k,jq))
-         kremainder=kqistabs/kqist(4,k,jq) ! 1 for same protein
+
+         kremainder=kqistabs/kqist(4,k,jq) ! if the contact is within one chain then 1, otherwise -1
+
+         ! Values of 'iconttype' mean:
+         ! 1: no contact, 4: bb, 5: ss, 6: bs, 7: sb, 8: (i, i+4)
+         ! The corresponding 'kqistabs' value is the same as 'iconttype', 
+         ! unless 'lsim' is false (which is default) and 'iconttype' is 5, then
+         ! 'kqistabs' holds the value 21*x + y, where 'x' and 'y' are codes
+         ! of amino acids in contact.
          if(kqistabs.gt.8) then
             iconttype=5
          else
             iconttype=kqistabs  ! 4-8 for backbone contact
          endif
+
          rsig=sigma1(kqistabs)  ! wrong if kqistabs<4, but w no effect
 c     if(abs(j-i).eq.4) rsig=sigma1(8)
          iconttype2=1           ! type of contact after checking conditions
+
          i=kqist(1,k,jq)        ! kqist 1 or 2 = residue numbers
          j=kqist(2,k,jq)        ! jq = number of verlet list (1 or 2)
-         itype=ksdchns(i)
-         jtype=ksdchns(j)
+
          dx = x0(i)-x0(j)
          dy = y0(i)-y0(j)
          dz = z0(i)-z0(j)
@@ -2776,53 +2784,103 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
          if(lpbcy) dy = dy-ysep*nint(dy*yinv)
          if(lpbcz) dz = dz-zsep*nint(dz*zinv)
          rsq=dx*dx+dy*dy+dz*dz
+
          if(rsq.lt.rneisq) then
             nei(1,i)=nei(1,i)+1
             nei(1,j)=nei(1,j)+1
          endif
          if(rsq.gt.rcutsq) then
-            if(kqadabs.ne.0)
-     $           kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
+            if(kqadabs.ne.0) kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
             goto 465
          endif
+
          r = sqrt(rsq)
+
+         itype=ksdchns(i)
+         jtype=ksdchns(j)
          lelectr=(lcpot.and.itype+jtype.gt.7)
+
+         ! START OF DEFINING CONTACT TYPES
+         ! If a contact is found, 'iconttype2' is set
+         ! and k
+         if(rsq.lt.rneisq) then
+            nei(1,i)=nei(1,i)+1
+            nei(1,j)=nei(1,j)+1
+         endif
+         if(rsq.gt.rcutsq) then
+            if(kqadabs.ne.0) kqist(3,k,jq)=sign(kqadabs-1,kqist(3,k,jq))
+            goto 465
+         endif
+
+         r = sqrt(rsq)
+
+         itype=ksdchns(i)
+         jtype=ksdchns(j)
+         lelectr=(lcpot.and.itype+jtype.gt.7)
+
+         ! START OF DEFINING CONTACT TYPES
+         ! If a contact is found, 'iconttype2' is set
+         ! and 'kqistabs' is updated according to the rules
+         ! described at the beginning of the enclosing loop.
          if(iconttype.lt.2) then
-!     ---------- contact not formed ----------------------------
+            !     ---------- contact not formed ----------------------------
+
+            ! This if is only for speed optimization (just the if line, not its body). 
+            ! If it's not true, then the residues are too far 
+            ! from each other to form an ss/sb/bs contact.
+            ! Presumably, that also excludes the possibility of a bb contact. (TODO: ask about it)
+            ! Also, it can be a bug if 'lsim' is true, 
+            ! because we should use sigma1(5) instead of sigma1(21*x+y).
             if(r.lt.sfact*(max(sigma1(inameseq(i)*21+inameseq(j)),
-     +           sigma1(6)))) then ! this if is only for speed optimization
+     +           sigma1(6)))) then 
+
+               ! Checking conditions for a backbone-backbone contact
                bbir=0.0         ! bb = backbone, ir = criterion for r and residue i
                bbjr=0.0
                kmaxbckbi=kmaxbckb
                if(inameseq(i).eq.2) kmaxbckbi=1 ! pro has only 1 hbond
-               if(khbful(1,i).lt.kmaxbckbi) then ! cos(n,r)
+               if(khbful(1,i).lt.kmaxbckbi) then ! |cos(h_i,r_ij)|
                   bbir=abs((vxv(1,i)*dx+vxv(2,i)*dy+vxv(3,i)*dz)/r)
                endif
                kmaxbckbj=kmaxbckb
                if(inameseq(j).eq.2) kmaxbckbj=1 ! pro has only 1 hbond
-               if(khbful(1,j).lt.kmaxbckbj) then ! cos(n,r)
+               if(khbful(1,j).lt.kmaxbckbj) then ! |cos(h_j,r_ij)|
                   bbjr=abs((vxv(1,j)*dx+vxv(2,j)*dy+vxv(3,j)*dz)/r)
                endif
-!     if(bbir+bbjr.gt.2.d0*bckb2min) then
+
+               ! if(bbir+bbjr.gt.2.d0*bckb2min) then
                if(bbir.gt.bckb2min .and. bbjr.gt.bckb2min) then
                   if((abs(j-i).ne.4).or.kremainder.ne.1) then
                      bbij=vxv(1,i)*vxv(1,j)+vxv(2,i)*vxv(2,j)+
      $                    vxv(3,i)*vxv(3,j)
-                     if(abs(bbij).gt.bckbmin) iconttype2=4 ! backbone-backbone
+                     if(abs(bbij).gt.bckbmin) iconttype2=4 ! bb contact found
                   endif
                endif
-!     if(abs(bbij)+bbir+bbjr.gt.3*bckbmin) iconttype2=4
-!     endif
+               !    if(abs(bbij)+bbir+bbjr.gt.3*bckbmin) iconttype2=4
+               ! endif
+
+
+
+               ! If there's no bb contact found, try bs or sb.
+               ! All this code does is checking the angle conditions for bs/sb contacts
+               ! and coordination number condition.
+               ! The only weird thing is that if the number of neighbours is less than 'neimin'
+               ! then we increase the coordination number by 1, but 'neimin' is 0 by default,
+               ! so it's likely an obscure feature.
                if(iconttype2.lt.2) then
+                  ! sdchni will be 0 if cos(n, r) < 0, otherwise it'll be cos^2(n, r)
+                  ! Comparing sdchni < sdchnmax is equivalent to checking if
+                  ! cos(n, r) < 0.5 (because sdchnmax = 0.5**2 by default)
                   sdchni=1.0    ! sdchn or sd = sidechain
                   ksi=khbful(2,i)
                   if(nei(2,i).lt.neimin) ksi=ksi+1
                   if((i.gt.1).and.ksi.lt.ksdchn(inameseq(i),2))then
-                     i0=i-1     ! khbful 1-bb contacts,2-sd cont.,3-max sd cont
+                     i0=i-1 
                      sdir=(v(1,i0)-v(1,i))*dx+(v(2,i0)-v(2,i))*dy+
      $                    (v(3,i0)-v(3,i))*dz
                      sdirnrm=0.0
-                     if(sdir.lt.0.0) then ! if <0, no need to compute norm
+                     if(sdir.lt.0.0) then
+                        ! We know now that cos(n, r) < 0, no need to calculate it exactly.
                         sdchni=0.0
                      else
                         do l=1,3
@@ -2832,9 +2890,11 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                         sdchni=sdir !min(1.0,max(sdchnmax-sdir,0.0)/sdchnmin)
                      endif
                   endif
+
                   if(bbjr.gt.bckb2min .and. sdchni.lt.sdchnmax) then
                      iconttype2=7 ! sidechain-backbone
                   else
+                     ! We repeat exactly the same logic but with i and j switched.
                      sdchnj=1.0
                      ksj=khbful(2,j)
                      if(nei(2,j).lt.neimin) ksj=ksj+1 
@@ -2844,12 +2904,13 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
      $                       +(v(3,j)-v(3,j0))*dz
                         sdjrnrm=0.0
                         if(sdjr.lt.0.0) then
+                           ! We know now that cos(n, r) < 0, no need to calculate it exactly.
                            sdchnj=0.0
                         else
                            do l=1,3
                               sdjrnrm=sdjrnrm+(v(l,j)-v(l,j0))**2
                            enddo
-                           sdjr=sdjr**2/(sdjrnrm*rsq)
+                           sdjr=sdjr**2/(sdjrnrm*rsq) ! cos^2(n, r)
                            sdchnj=sdjr !min(1.0,max(sdchnmax-sdjr,0.0)/sdchnmin)
                         endif
                      endif
@@ -2858,27 +2919,45 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                      endif
                   endif
                endif
+
+
+
+
+
+               ! If there's still no contact found, try ss.
                if(iconttype2.lt.2) then
                   if(sdchni.lt.sdchnmax.and.sdchnj.lt.sdchnmax) then
+                     ! This checks coordination number condition for 
+                     ! polar/hydrophobic ss contacts.
                      it2=2+min(itype,2)
                      jt2=2+min(jtype,2)
                      lki=khbful(jt2,i).lt.ksdchn(inameseq(i),jt2)
                      lkj=khbful(it2,j).lt.ksdchn(inameseq(j),it2)
+
+
+                     ! TODO: figure out this condition more.
                      lel=(.not.(lelectr.and.itype.eq.jtype))
+
+                     ! Trp-Trp (i,i+3) ss contacts are disabled.
                      ltr=(inameseq(i).eq.20.and.inameseq(j).eq.20
      $                    .and.abs(j-i).eq.3)
-!     ksdchnsi=min(2,ksdchns(i))
-!     ksdchnsj=min(2,ksdchns(j))
+
+                     ! ksdchnsi=min(2,ksdchns(i))
+                     ! ksdchnsj=min(2,ksdchns(j))
                      if(lel.and.lki.and.lkj.and..not.ltr) iconttype2=5 !sd-sd
-!     if(ksdchnsi.eq.ksdchnsj) iconttype2=5 ! sidechain-sd
+                     ! if(ksdchnsi.eq.ksdchnsj) iconttype2=5 ! sidechain-sd
                   endif
                endif
+
                if(lsim.or.iconttype2.ne.5) then
                   kqistabs=iconttype2
                else
                   kqistabs=inameseq(i)*21+inameseq(j)
                endif
             endif               ! end of the speed optimization if
+
+            ! If we found a contact and the distance between residues
+            ! is smaller than the threshold, do some bookkeeping. 
             if(r.le.sigma1(kqistabs)*sfact.and.iconttype2.gt.1) then 
                kqist(4,k,jq)=sign(kqistabs,kqist(4,k,jq))
                if(kqadabs.lt.ad) kqist(3,k,jq)=kqadabs+1
@@ -2895,40 +2974,44 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
                         l3rdcn(j)=.true.
                         knct3rd(i)=j
                         knct3rd(j)=i
-                        if(kqist(4,k,jq).gt.0) then ! are the same type
+
+                        ! Update the number of (intra/inter)chain disulfide bonds.
+                        if(kqist(4,k,jq).gt.0) then ! i, j are in one chain
                            intrsc=intrsc+1
                         else
                            intesc=intesc+1
                         endif
+
                         if(ldynss) then
                            icheck=0
                            do kss=1,nssb
-                              if(ksb(1,kss).eq.i
-     $                             .and.ksb(2,kss).eq.j) then
-                              icheck=1
-                              icnss=icnss+1
-                           endif
-                           if(ksb(2,kss).eq.i.and.ksb(1,kss).eq.j) then
-                              icheck=1
-                              icnss=icnss+1
-                           endif
-                        enddo
-                        if(icheck.eq.0) icdss=icdss+1
+                              if(ksb(1,kss).eq.i.and.ksb(2,kss).eq.j)
+     $                             then
+                                 icheck=1
+                                 icnss=icnss+1
+                              endif
+                              if(ksb(2,kss).eq.i.and.ksb(1,kss).eq.j)
+     $                             then
+                                 icheck=1
+                                 icnss=icnss+1
+                              endif
+                           enddo
+                           if(icheck.eq.0) icdss=icdss+1
+                        endif
                      endif
                   endif
-               endif
-            else if(iconttype2.eq.7) then ! sidechain-backbone
-               khbful(2,i)=khbful(2,i)+1
-               khbful(1,j)=khbful(1,j)+1
-!     khbful(4,j)=khbful(4,j)+1
-            else if(iconttype2.eq.6) then ! backbone-sidechain
-               khbful(2,j)=khbful(2,j)+1
-               khbful(1,i)=khbful(1,i)+1
-!     khbful(4,i)=khbful(4,i)+1
-            else if(iconttype2.eq.4) then ! backbone-backbone
-               khbful(1,i)=khbful(1,i)+1
-               khbful(1,j)=khbful(1,j)+1
-            endif               ! kqist 4 = type of contact
+               else if(iconttype2.eq.7) then ! sidechain-backbone
+                  khbful(2,i)=khbful(2,i)+1
+                  khbful(1,j)=khbful(1,j)+1
+                  ! khbful(4,j)=khbful(4,j)+1
+               else if(iconttype2.eq.6) then ! backbone-sidechain
+                  khbful(2,j)=khbful(2,j)+1
+                  khbful(1,i)=khbful(1,i)+1
+                  ! khbful(4,i)=khbful(4,i)+1
+               else if(iconttype2.eq.4) then ! backbone-backbone
+                  khbful(1,i)=khbful(1,i)+1
+                  khbful(1,j)=khbful(1,j)+1
+               endif               ! kqist 4 = type of contact
          else
             iconttype2=1
             if(kqadabs.ne.0)
@@ -2938,16 +3021,16 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
 !     ---------- contact already formed ------------------------
          if(r.le.rsig*cntfct) then
             ncord=ncord+2
-!     if(lwritemap) then
-!     ncnt=ncnt+1
-!     nli(1,ncnt)=i
-!     nli(2,ncnt)=j
-!     nli(3,ncnt)=0
-!     nli(4,ncnt)=iconttype
-!     nli(5,ncnt)=kqist(4,k,jq)
-!     endif
+            ! if(lwritemap) then
+            !    ncnt=ncnt+1
+            !    nli(1,ncnt)=i
+            !    nli(2,ncnt)=j
+            !    nli(3,ncnt)=0
+            !    nli(4,ncnt)=iconttype
+            !    nli(5,ncnt)=kqist(4,k,jq)
+            ! endif
             iconttype2=min(iconttype,6) ! bb-sd (6) and sd-bb (7)
-            if(kremainder.eq.1) then ! are the same type
+            if(kremainder.eq.1) then ! are in the same chain
                intrhc=intrhc+1
                icnt(iconttype2)=icnt(iconttype2)+1
             else
@@ -2963,12 +3046,18 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
             endif
          endif
       endif
+
 !     END OF DEFINING CONTACT TYPES, NOW COMPUTING FORCES
+
+      lss=.false.
       if(ldynss.and.inameseq(i).eq.4 .and. inameseq(j).eq.4
      +     .and.iconttype.eq.5 .and. knct3rd(i).eq.j) lss=.true.
       if(lss.or.(lcpot.and.(iconttype.gt.1))) then !attractive pot
+
+
          if(inameseq(i).eq.4 .and. inameseq(j).eq.4
      +        .and.iconttype.eq.5 .and. knct3rd(i).eq.j) then
+
             if(kqist(3,k,jq).lt.0) then
                totcoeff=-kqist(3,k,jq)/ad
             else
@@ -2978,23 +3067,32 @@ c     if(abs(j-i).eq.4) rsig=sigma1(8)
             rb2 = rb*rb
             ene = totcoeff*(H1*rb2 + H2*rb2*rb2)
             fce = totcoeff*((2*H1+4*H2*rb2)*rb)
+
             lssn=(nei(2,i)+nei(2,j)).lt.neimaxdisul
             if(lssn.and.rb2.gt.0.1) then ! DESTROYING SS BOND
-c     kqist(4,k,jq)=kremainder ! contact destroyed
-c     l3rdcn(i)=.false.
-c     l3rdcn(j)=.false.
-c     knct3rd(i)=0
-c     knct3rd(j)=0
+
+               ! kqist(4,k,jq)=kremainder ! contact destroyed
+               ! l3rdcn(i)=.false.
+               ! l3rdcn(j)=.false.
+               ! knct3rd(i)=0
+               ! knct3rd(j)=0
+
+               ! Decreasing the number of (intra/inter)chain ss bonds.
                if(kqist(4,k,jq).gt.0) then ! are the same type
                   intrsc=intrsc-1
                else
                   intesc=intesc-1
                endif
-               if(kqist(3,k,jq).gt.0) then ! adiab. turning off
+
+               ! Adiabatic turning off.
+               if(kqist(3,k,jq).gt.0) then
                   kqist(3,k,jq)=1-kqist(3,k,jq)
                elseif(kqist(3,k,jq).lt.0) then
                   kqist(3,k,jq)=1+kqist(3,k,jq)
                endif
+
+               ! Finding if this ss bond was native or dynamic 
+               ! and decreasing the appropriate counter.
                if(ldynss) then
                   icheck=0
                   do kss=1,nssb
@@ -3009,8 +3107,14 @@ c     knct3rd(j)=0
                   enddo
                   if(icheck.eq.0) icdss=icdss-1
                endif
+
             endif
          else
+
+            ! By default, lsink is false, then all this code does is
+            ! totcoeff=potcoeff*(kqadabs)/ad
+            ! If lsink is true, it's something weird,
+            ! it should be true only if lpid is true anyway.
             if(lsink.and.r.le.rsig*c216) then
                if(r.le.cut) then
                   rsig=cut/c216 !*0.5d0**(1.d0/6.d0)
@@ -3022,15 +3126,20 @@ c     knct3rd(j)=0
                if(lsink.and.(.not.lelectr).and.kqadabs.eq.0) goto 465
                totcoeff=potcoeff*(kqadabs)/ad ! adiabatic
             endif
+
+
+            ! bb contacts are two times stronger than others.
             if(iconttype.eq.4) totcoeff=2.d0*totcoeff
+
             rsi=rsig/r
             r6=rsi**6
             ene=totcoeff*4.d0*r6*(r6-1.d0)
             fce=totcoeff*24.d0*r6*(1.d0-2.d0*r6)/r
-!     r10=rsi**10.
-!     r12=r10*rsi*rsi
-!     ene=5.d0*r12-6.d0*r10
-!     fce=60.d0*(r10-r12)/r
+            ! r10=rsi**10.
+            ! r12=r10*rsi*rsi
+            ! ene=5.d0*r12-6.d0*r10
+            ! fce=60.d0*(r10-r12)/r
+
             if(r.lt.cut.and..not.lsink) then !repulsion always on
                rsi=sigma0/r
                r6=rsi**6
@@ -3044,6 +3153,7 @@ c     knct3rd(j)=0
             ene=0.d0
             fce=0.d0
          else
+            ! INT_13: Repulsive L-J between all pairs.
             rsi=sigma0/r
             r6=rsi**6
             ene=4.d0*r6*(r6-1.d0)+1.d0
@@ -3108,6 +3218,7 @@ c     knct3rd(j)=0
       fy(j) = fy(j) - repy
       fz(i) = fz(i) + repz
       fz(j) = fz(j) - repz
+
  465  continue
       if(kqist(3,k,jq).eq.0 .and. iconttype.gt.2) then
          kqist(4,k,jq)=kremainder ! contact destroyed
@@ -3498,6 +3609,8 @@ c     chirality count does not include the gap
       do 495 i=1,men-1
          if(lconect(i)) then    ! lconect is true if i and i+1 are connected
             j=i+1               ! contacts between neighbour residues
+
+            ! INT_3: Harmonic tethering between (i, i+1) within one chain.
             xi=x0(i)
             yi=y0(i)
             zi=z0(i)
@@ -3525,8 +3638,11 @@ c     chirality count does not include the gap
             fz(i) = fz(i) + repz
             fz(j) = fz(j) - repz
             epot=epot+ene
+
             if(lconect(j)) then ! i,i+2 contacts purely repulsive
                j=i+2
+
+               ! INT_12: Repulsive L-J between (i, i+2) within one chain.
                dx = xi-x0(j)
                dy = yi-y0(j)
                dz = zi-z0(j)
@@ -3659,13 +3775,16 @@ c     chirality count does not include the gap
                      endif
                   endif
                endif
+               ! INT_14: Attractive L-J between native contacts
                rsi=rsig/r
                r6=rsi**6
                ene=4.d0*r6*(r6-1.d0)
                fce= 24.d0*r6*(1.d0-2.d0*r6)/r
             else if(abs(klist(3,icm)).eq.631) then ! for SSbonds
-c     ene=ene*disul
-c     fce=fce*disul
+               ! ene=ene*disul
+               ! fce=fce*disul
+
+               ! INT_15: SS bond (structured, harmonic)
                icn=icn+1
                rb = r - 6.d0/unit
                rb2 = rb*rb
@@ -3928,7 +4047,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          x1(i)=x1(i)+const2*gam
+
+         ! INT_1: Damping.
          fx(i)=fx(i)-gamma2*x1(i)
  10   continue
 
@@ -3937,7 +4060,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          y1(i)=y1(i)+const2*gam
+
+         ! INT_1: Damping.
          fy(i)=fy(i)-gamma2*y1(i)
  20   continue
 
@@ -3946,7 +4073,11 @@ C  THE LANGEVIN NOISE
          r1=ran2(0)
          r2=ran2(0)
          gam=dsqrt(-2.d0*log(r1))*dcos(twopi*r2)
+
+         ! INT_2: Thermal noise. 
          z1(i)=z1(i)+const2*gam
+
+         ! INT_1: Damping.
          fz(i)=fz(i)-gamma2*z1(i)
  30   continue
 
@@ -3964,6 +4095,8 @@ C     THE LANGEVIN NOISE WHICH TAKES INTO ACCOUNT THE MASSES OF A.A.
       common/bas/unit,men,lsqpbc,lpdb,lwritemap,lradii,lsink,lkmt,lfcc
 
       do 10 i=nen1,men
+         ! INT_1: Damping.
+         ! INT_2: Thermal noise.
          con2=const2/rsqmas(i)
          gam2=gamma2/rmas(i)
          r1=ran2(0)
@@ -4265,17 +4398,24 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
       kactual = 1
       kqactual = 1
       kfactual = 1
+
+      ! kqist and kfcc have two versions,
+      ! jq is the index of a new one, jq2 is the index of the old one
       jq2=jq
       jq=3-jq                   ! if jq was 2, it is 1, if it was 1, it is 2
+
       cutoff=verlcut+rcut
       cutoff2=cutoff**2
       smallcutoff=verlcut+cut
       smcut2=smallcutoff**2
       
       do ib=1,men
+         ! Saving old positions of residues, they are used to know
+         ! when 'update_verlet_list' needs to be called again.
          oxv(1,ib)=x0(ib)
          oxv(2,ib)=y0(ib)
          oxv(3,ib)=z0(ib)
+
          if(lfcc) then
             if(z0(ib)-zdown.lt.cutoff) then
                xi=x0(ib)
@@ -4341,6 +4481,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             endif
          endif
       enddo
+
       if((lpbcx.and.xsep.lt.0.001).or.(lpbcy.and.ysep.lt.0.001)
      +     .or.(lpbcz.and.zsep.lt.0.001)) then
          write(1,*) 'BROKEN PBC. PLS CHECK!' 
@@ -4348,9 +4489,15 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
       endif
       
       ic=2
+
+      ! This loop goes through all pairs of residues i < j, it skips  
+      ! pairs that are neighbours or second neighbours, because those interactions
+      ! are handled separately.
       do i=1,men
          if(i.gt.menchain(ic)) ic=ic+1
          
+         ! kdist is the first residue on the right of i-th residue
+         ! that is not its first or second neighbour
          if(lconect(i).and.lconect(i+1)) then
             kdist=i+3
          else if(lconect(i)) then
@@ -4358,10 +4505,13 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
          else
             kdist=i+1
          endif
+
          do j=kdist,men
-            lsamechain=j.le.menchain(ic)
-            lendchn=j.eq.i+1
-            if(i.lt.nen1 .and. j.lt.nen1) goto 1129
+            lsamechain=j.le.menchain(ic) ! true iff i and j are in the same chain
+            lendchn=j.eq.i+1 ! true iff i is the end of a chain and j the start of next chain 
+            if(i.lt.nen1 .and. j.lt.nen1) goto 1129 ! frozen residues, skip
+
+            ! Calculating the distance between i and j
             xi=x0(i)
             yi=y0(i)
             zi=z0(i)
@@ -4372,7 +4522,15 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
             if(lpbcy) dy = dy-ysep*nint(dy*yinv)
             if(lpbcz) dz = dz-zsep*nint(dz*zinv)
             rsq=dx*dx+dy*dy+dz*dz
+           
+            ! if rsq > cutoff2 then this pair of residues will not interact in any way
+            ! until the next update_verlet_list is called. Skip them.
             if(rsq.lt.cutoff2) then
+
+               ! This ensures that we notice native contacts, ASSUMING that klist
+               ! holds them in lexicographical order. We traverse (i, j) in the same order, 
+               ! so it's enough to keep 'kactual' that points to the last native contact
+               ! not greater than (i, j). 
  9797          continue
                if(kactual.le.klont) then ! find native contacts
                   k1=klist(1,kactual)
@@ -4389,16 +4547,26 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                      goto 1129
                   endif
                endif
-!     3579 is the label for "the rest" of contacts
+
+               ! 3579 is the label for "the rest" of contacts
                if(lendchn) goto 3579
-               iname1=inameseq(i)
-               iname2=inameseq(j)
+
                if(lsamechain) then ! 3580 skips electrostatics
                   if(.not.lcintr) goto 3580
                   if(abs(j-i).eq.4 .and. .not. lii4) goto 3579
                endif
+               
+               iname1=inameseq(i)
+               iname2=inameseq(j)
                if(iname1.eq.4 .and.iname2.eq.4 .and.lmrs) goto 3579
-               if(lpid) goto 9696 !no need 2 keep kqist for pid
+
+
+               ! This ensures that we notice contacts that were already in the old kqist.
+               ! It works in the same way as noticing native contacts above.
+               ! We need to do this, because when using quasi-adiabatic potential
+               ! we need to be able to turn interactions on and off adiabatically
+               ! which requires us to remember old contacts' state. 
+               if(lpid) goto 9696 !no need to do it for pid, because contacts don't have a state
  9898          continue
                if(kqactual.le.kqont2) then ! find non-native c.
                   kq1=kqist(1,kqactual,jq2)
@@ -4417,8 +4585,9 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                      goto 1129
                   endif
                endif
+
+               ! Store this new non-native contact in kqist.
  9696          continue
-!     make a new non-native contact
                kqont=kqont+1
                kqist(1,kqont,jq)=i
                kqist(2,kqont,jq)=j
@@ -4428,13 +4597,16 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                else
                   kqist(4,kqont,jq)=-1
                endif
+
+               ! Everything below is run only if lpid is true.
                if(lpid) then
-                  kqist(4,kqont,jq)=kqist(4,kqont,jq)
-     $                 *(iname1*21+iname2)
-                  if(lepid) goto 3580
+                  kqist(4,kqont,jq)=kqist(4,kqont,jq)*(iname1*21+iname2)
+
+                  if(lepid) goto 3580 !skip electrostatics, since 'evalimproper' will handle them
                else
                   goto 1129     ! TODO check if it works for lpid
                endif
+
 !     electrostatic, disulfide or repulsive contacts
  3579          continue
                if(.not.lcpot) goto 3581 !skip ssbond and electr
@@ -4453,7 +4625,7 @@ C    THIS SUBROUTINE UPDATES VERLET LIST
                   kcont=kcont+1
                   kcist(1,kcont)=i
                   kcist(2,kcont)=j
-                  kcist(3,kcont)=-2 ! nonnative SSbond
+                  kcist(3,kcont)=-2 ! nonnative SSbond (with Morse potential)
                   if(lsamechain) kcist(3,kcont)=-3
                   goto 1129
                endif
@@ -4819,7 +4991,9 @@ C     THIS SUBROUTINE COMPUTES DETAILS OF INTER-RESIDUE ANGLES
       end
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
+ 
+      ! THIS FUNCTION IS PROBABLY OBSOLETE AND THE COMMENTS HERE HAVE BEEN MISLEADING
+      
 C     THIS SUBROUTINE COMPUTES SS-BONDS WITHIN GO-MODEL
       subroutine compute_ssbonds()
       implicit double precision(a-h,o-z)
@@ -4956,6 +5130,9 @@ C     THIS SUBROUTINE READS THE NATIVE COUPLINGS WITHIN GO-MODEL FROM FILE
          write(*,*)'PROGRAM STOPPED.'
          stop
       endif
+      ! WARNING. Probably this function is a bit obsolete, because the .map files have
+      ! "shift of the reading frame" in the first line, which is not read here.
+      ! Compare this with the code that does exact same thing in 'load_sequence'. 
       read(98,*) icn
       read(98,*) men
       do i=1,icn
@@ -7325,24 +7502,30 @@ C CHIRALITY POTENTIALS
 
       enechi=0.d0
       do 3000 ib=1,men-3
+         ! Here we probably should also check if lconect(ib + 2) is true.
          if(lconect(ib) .and. lconect(ib+1)) then
             chira=chir(ib)
             if(chira*chirn(ib).gt.0.d0) goto 3000
             ib1=ib+1
             ib2=ib+2
             ib3=ib+3
-!     COMPUTE THE ENERGY
+
+            ! INT_4: Chirality potential.
+            
+            ! COMPUTE THE ENERGY
+            ! There is a bug here, we should take (chira - chirn(ib))**2 instead of chira**2
+            ! See implementation in F95/eval_chirality.f
             enechi=enechi+echi*chira*chira/2.d0
-!     COMPUTE THE FORCE
+            ! COMPUTE THE FORCE
             fchi=-echi*chira/bond**3
-!     FIRST RESIDUE
+            ! FIRST RESIDUE
             repx=ys(ib2)*zs(ib1)-zs(ib2)*ys(ib1)
             repy=zs(ib2)*xs(ib1)-xs(ib2)*zs(ib1)
             repz=xs(ib2)*ys(ib1)-ys(ib2)*xs(ib1)
             fx(ib)=fx(ib)+fchi*repx
             fy(ib)=fy(ib)+fchi*repy
             fz(ib)=fz(ib)+fchi*repz
-!     SECOND RESIDUE
+            ! SECOND RESIDUE
             xa=xs(ib)+xs(ib1)
             ya=ys(ib)+ys(ib1)
             za=zs(ib)+zs(ib1)
@@ -7352,7 +7535,7 @@ C CHIRALITY POTENTIALS
             fx(ib1)=fx(ib1)+fchi*repx
             fy(ib1)=fy(ib1)+fchi*repy
             fz(ib1)=fz(ib1)+fchi*repz
-!     THIRD RESIDUE
+            ! THIRD RESIDUE
             xa=xs(ib1)+xs(ib2)
             ya=ys(ib1)+ys(ib2)
             za=zs(ib1)+zs(ib2)
@@ -7362,7 +7545,7 @@ C CHIRALITY POTENTIALS
             fx(ib2)=fx(ib2)+fchi*repx
             fy(ib2)=fy(ib2)+fchi*repy
             fz(ib2)=fz(ib2)+fchi*repz
-!     FOURTH RESIDUE
+            ! FOURTH RESIDUE
             repx=ys(ib)*zs(ib1)-zs(ib)*ys(ib1)
             repy=zs(ib)*xs(ib1)-xs(ib)*zs(ib1)
             repz=xs(ib)*ys(ib1)-ys(ib)*xs(ib1)
@@ -8114,7 +8297,9 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
 !     COMPUTING POTENTIAL-DEPENDENT PART
             thetemp(ib)=theta
             if(langle) then
+
                if(lfrompdb(ib-1).and.lfrompdb(ib+1)) then
+                  ! INT_5: Bond angle (structured)
                   theta=theta-the0(ib)
                   ene=CBA*theta*theta
                   dvdp=2.d0*CBA*theta
@@ -8122,6 +8307,7 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
                   j=min(inameseq(ib),3)
                   k=min(inameseq(ib+1),3)
                   if (lenetab) then ! tabularized potential
+                     ! INT_6: Bond angle (unstructured, tabularized)
                      xx=theta/pp ! xx - theta in 0.01 degree units
                      ixx=INT(xx) ! ixx - number of the table row
                      xi=xx-ixx  ! xi - fractional part to interpolate
@@ -8130,6 +8316,7 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
                      aa=tene(ixx,j,k,2)
                      dvdp=(aa+xi*(tene(ixx+1,j,k,2)-aa))/pp/(-660)
                   else          ! polynomial potential
+                     ! INT_7: Bond angle (unstructured, statistical)
                      theta2=theta*theta
                      theta3=theta2*theta
                      theta4=theta3*theta
@@ -8143,6 +8330,8 @@ C     J. COMPUT. CHEM. 13: 585-594. DOI: 10.1002/JCC.540130508
      +                    +angpot(13,j,k)*theta4+angpot(14,j,k)*theta5
                   endif
                endif
+
+               ! INT_5, INT_6, INT_7. See the block above.
                epot=epot+ene
                fx(i1)=fx(i1)-dvdp*fi(1)
                fy(i1)=fy(i1)-dvdp*fi(2)
@@ -8230,51 +8419,54 @@ C     J. COMPUT. CHEM., 16: 527-533. DOI: 10.1002/JCC.540160502
 !     CALCULATING PART DEPENDENT ON POTENTIAL
             phitemp(ib)=phi
             if(langle.and.ldi) then
-               if(lfrompdb(ib-2)
-     $              .and.lfrompdb(ib+1).and..not.lcoildih) then
-               phi=phi-phi0(ib)
-               if(ldisimp) then
-                  ene=0.5*CDH*phi*phi
-                  dvdp=-CDH*phi
+               if(lfrompdb(ib-2).and.lfrompdb(ib+1).and..not.lcoildih)
+     $              then
+                  phi=phi-phi0(ib)
+                  if(ldisimp) then
+                     ! INT_8: Dihedral angle (structured, harmonic)
+                     ene=0.5*CDH*phi*phi
+                     dvdp=-CDH*phi
+                  else
+                     ! INT_9: Dihedral angle (structured, non-harmonic)
+                     ene=CDA*(1.d0-dcos(phi))+CDB*(1.d0-dcos(3.d0*phi))
+                     dvdp=CDA*sin(phi)+3.d0*CDB*sin(3.d0*phi)
+                  endif
                else
-                  ene=CDA*(1.d0-dcos(phi))+CDB*(1.d0-dcos(3.d0*phi))
-                  dvdp=CDA*sin(phi)+3.d0*CDB*sin(3.d0*phi)
+                  ! INT_10: Dihedral angle (unstructured, statistical)
+                  j=min(inameseq(ib-1),3)
+                  k=min(inameseq(ib),3)
+                  sinfi=dsin(phi)
+                  cosfi=cosphi
+                  sin2fi=sinfi**2
+                  cos2fi=cosfi**2
+                  sincosfi=sinfi*cosfi
+                  ene=dihpot(1,j,k)+dihpot(2,j,k)*sinfi
+     $                 +dihpot(3,j,k)*cosfi
+     +                 +dihpot(4,j,k)*sin2fi+dihpot(5,j,k)*cos2fi
+     +                 +dihpot(6,j,k)*sincosfi
+                  dvdp=dihpot(2,j,k)*cosfi-dihpot(3,j,k)*sinfi
+     +                 +2.d0*(dihpot(4,j,k)-dihpot(5,j,k))*sincosfi
+     +                 +dihpot(6,j,k)*(cos2fi-sin2fi)
                endif
-            else
-               j=min(inameseq(ib-1),3)
-               k=min(inameseq(ib),3)
-               sinfi=dsin(phi)
-               cosfi=cosphi
-               sin2fi=sinfi**2
-               cos2fi=cosfi**2
-               sincosfi=sinfi*cosfi
-               ene=dihpot(1,j,k)+dihpot(2,j,k)*sinfi
-     $              +dihpot(3,j,k)*cosfi
-     +              +dihpot(4,j,k)*sin2fi+dihpot(5,j,k)*cos2fi
-     +              +dihpot(6,j,k)*sincosfi
-               dvdp=dihpot(2,j,k)*cosfi-dihpot(3,j,k)*sinfi
-     +              +2.d0*(dihpot(4,j,k)-dihpot(5,j,k))*sincosfi
-     +              +dihpot(6,j,k)*(cos2fi-sin2fi)
+               if(lsldh) then
+                  dvdp=dvdp*cofdih
+                  ene=ene*cofdih
+               endif
+               epot=epot+ene    
+               fx(i1)=fx(i1)-dvdp*fi(1)
+               fy(i1)=fy(i1)-dvdp*fi(2)
+               fz(i1)=fz(i1)-dvdp*fi(3)
+               fx(i2)=fx(i2)-dvdp*fj(1)
+               fy(i2)=fy(i2)-dvdp*fj(2)
+               fz(i2)=fz(i2)-dvdp*fj(3)
+               fx(i3)=fx(i3)-dvdp*fk(1)
+               fy(i3)=fy(i3)-dvdp*fk(2)
+               fz(i3)=fz(i3)-dvdp*fk(3)
+               fx(i4)=fx(i4)-dvdp*fl(1)
+               fy(i4)=fy(i4)-dvdp*fl(2)
+               fz(i4)=fz(i4)-dvdp*fl(3)
             endif
-            if(lsldh) then
-               dvdp=dvdp*cofdih
-               ene=ene*cofdih
-            endif
-            epot=epot+ene    
-            fx(i1)=fx(i1)-dvdp*fi(1)
-            fy(i1)=fy(i1)-dvdp*fi(2)
-            fz(i1)=fz(i1)-dvdp*fi(3)
-            fx(i2)=fx(i2)-dvdp*fj(1)
-            fy(i2)=fy(i2)-dvdp*fj(2)
-            fz(i2)=fz(i2)-dvdp*fj(3)
-            fx(i3)=fx(i3)-dvdp*fk(1)
-            fy(i3)=fy(i3)-dvdp*fk(2)
-            fz(i3)=fz(i3)-dvdp*fk(3)
-            fx(i4)=fx(i4)-dvdp*fl(1)
-            fy(i4)=fy(i4)-dvdp*fl(2)
-            fz(i4)=fz(i4)-dvdp*fl(3)
          endif
-      endif
  200  continue
 !     $omp enddo nowait
 !     $omp end parallel 

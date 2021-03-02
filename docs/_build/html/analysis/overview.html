@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview &#8212; Proteins  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Main/global code" href="main.html" />
+    <link rel="prev" title="Analysis of legacy code" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="high-level-control-flow">
+<h2>High-level control flow<a class="headerlink" href="#high-level-control-flow" title="Permalink to this headline">¶</a></h2>
+<p>The structure of the simulation at the highest level is similar to other MD programs:</p>
+<ol class="arabic simple">
+<li><p>Initialize variables, fields, read protein files etc.</p></li>
+<li><p>For every “sample” (in this program we loop over temperatures and trajectories):</p></li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>Reset geometry and other parameters;</p></li>
+<li><p>Do “equilibration” (simulation without walls and external forces);</p></li>
+<li><p>Simulate the system proper: compute forces and update the state with an integrator, in a loop.</p></li>
+</ol>
+</div></blockquote>
+<p>(These steps, of course, are interrupted by reporting, saving restart files and current geometry etc.)</p>
+</div>
+<div class="section" id="geometry-of-the-system">
+<h2>Geometry of the system<a class="headerlink" href="#geometry-of-the-system" title="Permalink to this headline">¶</a></h2>
+<p>By default, the simulation occurs in an infinite space. This we can change by introducing a “simulation box”; there are, for each pair of opposite faces of the box (X, Y, Z), following options:</p>
+<ul class="simple">
+<li><p>there is a “solid” (repulsive) wall of potential;</p></li>
+<li><p>there is a wall in the form of an immovable face-centered-cubic lattice of beads, which interacts quasi-adiabatically with the chains;</p></li>
+<li><p>there is a flat attractive wall, which is the same as above but without the beads;</p></li>
+<li><p>there is no wall, and in particular we should treat it as a periodic boundary.</p></li>
+</ul>
+<p>The size of the box is determined either by a <code class="docutils literal notranslate"><span class="pre">CRYST1</span></code> record or derived automatically as to achieve a particular density (the box is a cube, then).</p>
+<p>Moreover, we can “program” the walls to change size, in particular oscillate.</p>
+</div>
+<div class="section" id="types-of-proteins">
+<h2>Types of proteins<a class="headerlink" href="#types-of-proteins" title="Permalink to this headline">¶</a></h2>
+<p>The program accepts two types of proteins:</p>
+<ul class="simple">
+<li><p>structured – ones where the native structure in the form of xyz coordinates is already present – in this case, positions of CA atoms, crystallographic data (including repetition of chains) and disulfide bonds are extracted; contact map is either derived or given by a provided file;</p></li>
+<li><p>(partially) unstructured – where we are given chains of residues (but without the coordinates), possibly along with some predefined contacts.</p></li>
+</ul>
+<p>The force fields that may appear in the simulation depend on the type of protein.</p>
+</div>
+<div class="section" id="force-fields">
+<h2>Force fields<a class="headerlink" href="#force-fields" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proteins</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Project overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Analysis of legacy code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#sources">Sources</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../openmm/index.html">OpenMM implementation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Analysis of legacy code</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Analysis of legacy code</a></li>
+      <li>Next: <a href="main.html" title="next chapter">Main/global code</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, IF PAN, ZPP Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/analysis/overview.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

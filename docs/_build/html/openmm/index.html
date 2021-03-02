@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenMM implementation &#8212; Proteins  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Functions" href="../analysis/functions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="openmm-implementation">
+<h1>OpenMM implementation<a class="headerlink" href="#openmm-implementation" title="Permalink to this headline">¶</a></h1>
+<p>Before implementing a custom architecture for the model, we have decided to investigate whether one could utilize existing tools, such as <a class="reference external" href="http://openmm.org/">OpenMM</a>, for implementing it.</p>
+<div class="section" id="advantages">
+<h2>Advantages<a class="headerlink" href="#advantages" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>OpenMM includes MPI and GPU platforms by default, so one could achieve massive performance gains with it;</p></li>
+<li><p>A vast array of existing force fields and other tools, such as different integrators, handling PBC, PDB file parsing, automatic Verlet/cell lists etc. are available by default;</p></li>
+<li><p>There are many frontends for it, including Python and C++.</p></li>
+</ol>
+</div>
+<div class="section" id="challenges">
+<h2>Challenges<a class="headerlink" href="#challenges" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>OpenMM is designed with all-atom simulations in mind – in particular, doing coarse-grained simulations efficiently may prove to be non-trivial, especially when we wish to use other tools in the suite;</p></li>
+<li><p>Walls, especially resizable wall and lattice-like ones, are not available by default – there are, however, facilities for defining an appropriate force field;</p></li>
+<li><p>Quasi-adiabatic and PID potentials are not included, and in particular there is no clear way of defining custom force fields based on <em>dynamically</em> created/destroyed contacts.</p></li>
+</ol>
+</div>
+<div class="section" id="conclusions">
+<h2>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
+<p>There is no out-of-the-box method whereby PID and quasi-adiabatic potentials could be implemented; moreover, adding custom forces may prove too cumbersome, compared with implementing the system anew.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proteins</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Project overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis/index.html">Analysis of legacy code</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenMM implementation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#advantages">Advantages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#challenges">Challenges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusions">Conclusions</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../analysis/functions.html" title="previous chapter">Functions</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, IF PAN, ZPP Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/openmm/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
