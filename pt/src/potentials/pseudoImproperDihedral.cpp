@@ -179,9 +179,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
                         dvdp[nr] += alpha3[nr] * dgdx / dgdx2 * bb_lambda[other_nr] * lj_energy;
                     }
                 }
-
             }
-
         }
         //TODO consider moving analogous pieces of code for bb and ss to external method
 
@@ -226,9 +224,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
                         dvdp[nr] += alpha_ss * dgdx / dgdx2 * ss_lambda[other_nr] * lj_energy;
                     }
                 }
-
             }
-
         }
 
         force /= -dist;
@@ -246,9 +242,9 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             forces.row(i1-1) -= dvdp[nr] * f_var[nr][2].array();
             forces.row(i2) -= dvdp[nr] * f_var[nr][3].array();
         }
-
-        return forces;
+        
     }
+    return forces;
 }
 
 
