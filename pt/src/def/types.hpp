@@ -2,6 +2,9 @@
 #include <eigen3/Eigen/Core>
 #include <Eigen/Core>
 
+#include <map>
+#include <string>
+
 using Scalar = double;
 using ScalarArray = Eigen::ArrayXd;
 using Vec3D = Eigen::RowVector3d;

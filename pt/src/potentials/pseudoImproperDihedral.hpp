@@ -13,7 +13,9 @@ public:
 private:
     bool enabled;
     Scalar cutoff;
-    bool mj_matrix;
+    bool use_mj_matrix;
+    const map<pair<string,string>, Scalar> &mj_matrix;
+    const map<pair<string,string>, Scalar> &sigma_ss;
     bool pid_cos;
     Scalar alpha_bb_pos;
     Scalar alpha_bb_neg;

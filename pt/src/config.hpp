@@ -2,7 +2,7 @@
 #include "def/types.hpp"
 #include "conf/constants.hpp"
 #include "conf/units.hpp"
-#include <string>
+
 using namespace std;
 
 /*
@@ -18,22 +18,28 @@ class Config {
 public:
     Config(int argc, char **argv);
 
+
+    // Multiple potentials
     Scalar contact_mltp = 1.3; // MULTIPLIES SIGMA TO CHECK IF CONTACT PRESENT
     bool sink_pot = false; // for sink-like potential for non-native contacts
+    //TODO read sigma_ss from param file
+    map<pair<string,string>, Scalar> sigma_ss; // part of sigma1 in cg.f, symmetrical
 
     // Angle potential:
     bool bond_angle_pot = true;
     bool dih_angle_pot = true;
     bool tabularized_angle_pot = false;
     bool harmonic_dih_pot = false;
-    bool pseudo_improper_dihedral_pot = true;
     Scalar k_theta = 30.0;        // CBA in cg.f
     Scalar k_phi_harmonic = 3.33; // CDH in cg.f
     Scalar k_phi_1 = 0.66;        // CDA in cg.f
     Scalar k_phi_2 = 0.66;        // CDB in cg.f
 
     // PID potential:
-    bool mj_matrix = false; // use Miyazawa-Jernigan matrix (lmj in cg.f)
+    bool pseudo_improper_dihedral_pot = true;
+    bool use_mj_matrix = false; // use Miyazawa-Jernigan matrix (lmj in cg.f)
+    // TODO read M-J matrix from param file
+    map<pair<string,string>, Scalar> mj_matrix; //M-J matrix, should be symmetrical
     bool pid_cos = false; // use cos/sin when calculating PID, slower but more precise
     Scalar alpha_bb_pos = 6.4; //alphacos(1,2,3) respectively in cg.f
     Scalar alpha_bb_neg = 6.0;

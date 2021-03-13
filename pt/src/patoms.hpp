@@ -27,6 +27,7 @@ public:
     Vec3DArray native_pos;
     vector<Scalar> native_distances;
     vector<pair<int, int>> native_contacts;
+    vector<string> residue_name; // name of i-th residue (PRO, GLY etc.)
 
     // For testing, temporary. It's the number of times
     // ran2 was called before running the simulation.

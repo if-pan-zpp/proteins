@@ -4,10 +4,11 @@
 PseudoImproperDihedral::PseudoImproperDihedral(const Config &_config,
                                             const State &_state,
                                             const PAtoms &_p_atoms) :
-    Potential(_config, _state, _p_atoms) {
+    Potential(_config, _state, _p_atoms), mj_matrix(_config.mj_matrix),
+    sigma_ss(_config.sigma_ss) {
         enabled = _config.pseudo_improper_dihedral_pot;
         cutoff = _config.all_potentials_r_cut;
-        mj_matrix = _config.mj_matrix;
+        use_mj_matrix = _config.use_mj_matrix;
         pid_cos = _config.pid_cos;
         Scalar alpha_bb_pos = _config.alpha_bb_pos;
         Scalar alpha_bb_neg = _config.alpha_bb_pos;
@@ -32,6 +33,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
                                             const VerList &verlet_list){
     Vec3DArray forces = Vec3DArray::Zero(p_atoms.n, 3);
     const Vec3DArray &positions = p_atoms.der[0];
+    const vector<string> &names = p_atoms.residue_name;
 
     pair<VerIt, VerIt> list = verlet_list.get_verlet_list(cutoff);
 
@@ -39,9 +41,11 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
         int i = it -> first;
         int j = it -> second;
 
-        // TODO implement Miyazawa-Jernigan matrix 
-        // and use it here if mj_matrix = true
-        Scalar eps_mj = 1.;
+        Scalar eps_mj;
+        if(use_mj_matrix)
+            eps_mj = mj_matrix.at({names[i], names[j]});
+        else
+            eps_mj = 1.;
 
         // TODO implement PBC distance
         Vec3D diff_vec = positions.row(j) - positions.row(i);
@@ -52,7 +56,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
 
         if(sq_dist > cutoff * cutoff)   continue;
 
-        // TODO if any residue type is PRO, then continue
+        if(names[i] == "PRO" || names[j] == "PRO")  continue;
 
         Scalar ss_lambda[2];
         Scalar bb_lambda[2];
@@ -184,7 +188,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
         //TODO consider moving analogous pieces of code for bb and ss to external method
 
         if(eps_mj > min_lambda && ss_lambda_ > min_lambda) {
-            // TODO set r_min depending on residues types (sigma1 in cg.f)
+            r_min = abs(sigma_ss.at({names[i], names[j]}));
             if(dist < r_min * contact_mltp) {
                 //TODO update global contact count
             }
