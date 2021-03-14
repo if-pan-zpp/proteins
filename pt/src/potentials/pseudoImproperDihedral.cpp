@@ -5,23 +5,27 @@ PseudoImproperDihedral::PseudoImproperDihedral(const Config &_config,
                                             const State &_state,
                                             const PAtoms &_p_atoms) :
     Potential(_config, _state, _p_atoms), mj_matrix(_config.mj_matrix),
-    sigma_ss(_config.sigma_ss) {
+    sigma_ss(_config.sigma_ss), residue_types(_config.residue_types) {
         enabled = _config.pseudo_improper_dihedral_pot;
         cutoff = _config.all_potentials_r_cut;
         use_mj_matrix = _config.use_mj_matrix;
         pid_cos = _config.pid_cos;
-        Scalar alpha_bb_pos = _config.alpha_bb_pos;
-        Scalar alpha_bb_neg = _config.alpha_bb_pos;
-        Scalar alpha_ss = _config.alpha_ss;
-        Scalar psi0_bb_pos = _config.psi0_bb_pos;
-        Scalar psi0_bb_neg = _config.psi0_bb_neg;
-        Scalar psi0_ss = _config.psi0_ss;
-        Scalar rmin_pos = _config.pid_rmin_pos;
-        Scalar rmin_neg = _config.pid_rmin_neg;
-        Scalar contact_mltp = _config.contact_mltp;
-        bool sink_pot = _config.sink_pot;
-        Scalar eps_bb = _config.eps_bb;
-        bool pid_barrier = _config.pid_barrier;
+        alpha_bb_pos = _config.alpha_bb_pos;
+        alpha_bb_neg = _config.alpha_bb_pos;
+        alpha_ss = _config.alpha_ss;
+        psi0_bb_pos = _config.psi0_bb_pos;
+        psi0_bb_neg = _config.psi0_bb_neg;
+        psi0_ss = _config.psi0_ss;
+        rmin_pos = _config.pid_rmin_pos;
+        rmin_neg = _config.pid_rmin_neg;
+        contact_mltp = _config.contact_mltp;
+        sink_pot = _config.sink_pot;
+        eps_bb = _config.eps_bb;
+        pid_barrier = _config.pid_barrier;
+        pid_electrostatics = _config.pid_electrostatics;
+        elektr_screen = _config.elektr_screen;
+        coul = _config.coul;
+        ele_perm_const = _config.ele_perm_const;
     }
 
 
@@ -41,6 +45,7 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
         int i = it -> first;
         int j = it -> second;
 
+        bool norm_too_small = false;
         Scalar eps_mj;
         if(use_mj_matrix)
             eps_mj = mj_matrix.at({names[i], names[j]});
@@ -80,7 +85,10 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             Scalar v4_norm_sq = v4.dot(v4);
             Scalar v5_norm_sq = v5.dot(v5);
 
-            //if(v4_norm_sq < min_norm || v5_norm_sq < min_norm)  use GOTO?
+            if(v4_norm_sq < min_norm || v5_norm_sq < min_norm) {
+                norm_too_small = true;
+                continue;
+            }
 
             Scalar cospsi = v5.dot(v4) / sqrt(v5_norm_sq * v4_norm_sq);
             Scalar psi = acos(cospsi);
@@ -137,6 +145,8 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             }
         }
 
+        if(norm_too_small)  continue;
+
         Scalar ss_lambda_ = ss_lambda[0] * ss_lambda[1];
         Scalar bb_lambda_ = bb_lambda[0] * bb_lambda[1];
 
@@ -152,19 +162,17 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             if(sink_pot && dist < r_min * pow(2., 1. / 6.)) {
                 lj_energy = - eps_bb;
             }
-            else {
-                if(pid_barrier) {
-                    Scalar rsi = r_min *  pow(2., 1. / 6.) / dist;
-                    Scalar r6 = pow(rsi, 6.);
-                    lj_energy = r6 * (4. * r6 - 18. * rsi + 13.) * eps_bb;
-                    force += 6. * r6 * (21. * rsi - 8. * r6 - 13.) 
+            else if(pid_barrier) {
+                Scalar rsi = r_min *  pow(2., 1. / 6.) / dist;
+                Scalar r6 = pow(rsi, 6.);
+                lj_energy = r6 * (4. * r6 - 18. * rsi + 13.) * eps_bb;
+                force += 6. * r6 * (21. * rsi - 8. * r6 - 13.)
                                         / dist * bb_lambda_ * eps_bb;
-                } else {
-                    Scalar rsi = r_min  / dist;
-                    Scalar r6 = pow(rsi, 6.);
-                    lj_energy = 4. * r6 * (1. - r6) * eps_bb;
-                    force += 24. * r6 * (1. - 2. * r6) / dist * bb_lambda_ * eps_bb;
-                }
+            } else {
+                Scalar rsi = r_min  / dist;
+                Scalar r6 = pow(rsi, 6.);
+                lj_energy = 4. * r6 * (1. - r6) * eps_bb;
+                force += 24. * r6 * (1. - 2. * r6) / dist * bb_lambda_ * eps_bb;
             }
             //TODO update global potential energy
 
@@ -192,24 +200,36 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             if(dist < r_min * contact_mltp) {
                 //TODO update global contact count
             }
-            // are we going to use 'untested feature' associated with lepid?
-            // if yes, we need info about residue type (ksdchns in cg.f)
-            if(sink_pot && dist < r_min * pow(2., 1. / 6.)) {
+            int i_type = residue_types.at(names[i]);
+            int j_type = residue_types.at(names[j]);
+            bool i_charged = i_type == polar_pos || i_type == polar_neg;
+            bool j_charged = j_type == polar_pos || j_type == polar_neg;
+            if(pid_electrostatics && i_charged && j_charged){
+                Scalar expc = exp(-1. / elektr_screen);
+                Scalar coulpotcoeff = expc * coul;
+                if(i_type == j_type)    coulpotcoeff *= -1.;
+                if(ele_perm_const) {
+                    lj_energy = coulpotcoeff / dist;
+                    force += lj_energy * (-1. / elektr_screen - 1.) / dist;
+                } else {
+                    lj_energy = coulpotcoeff / sq_dist;
+                    force += lj_energy * (-1. / elektr_screen - 2.) / dist;
+                }
+            }
+            else if(sink_pot && dist < r_min * pow(2., 1. / 6.)) {
                 lj_energy = - eps_mj;
             }
-            else {
-                if(pid_barrier) {
-                    Scalar rsi = r_min *  pow(2., 1. / 6.) / dist;
-                    Scalar r6 = pow(rsi, 6.);
-                    lj_energy = r6 * (4. * r6 - 18. * rsi + 13.) * eps_mj;
-                    force += 6. * r6 * (21. * rsi - 8. * r6 - 13.) 
+            else if(pid_barrier) {
+                Scalar rsi = r_min *  pow(2., 1. / 6.) / dist;
+                Scalar r6 = pow(rsi, 6.);
+                lj_energy = r6 * (4. * r6 - 18. * rsi + 13.) * eps_mj;
+                force += 6. * r6 * (21. * rsi - 8. * r6 - 13.) 
                                         / dist * ss_lambda_ * eps_mj;
-                } else {
-                    Scalar rsi = r_min  / dist;
-                    Scalar r6 = pow(rsi, 6.);
-                    lj_energy = 4. * r6 * (1. - r6) * eps_mj;
-                    force += 24. * r6 * (1. - 2. * r6) / dist * ss_lambda_ * eps_mj;
-                }
+            } else {
+                Scalar rsi = r_min  / dist;
+                Scalar r6 = pow(rsi, 6.);
+                lj_energy = 4. * r6 * (1. - r6) * eps_mj;
+                force += 24. * r6 * (1. - 2. * r6) / dist * ss_lambda_ * eps_mj;
             }
             //TODO update global potential energy
 
@@ -246,7 +266,6 @@ Vec3DArray PseudoImproperDihedral::calculate_forces(
             forces.row(i1-1) -= dvdp[nr] * f_var[nr][2].array();
             forces.row(i2) -= dvdp[nr] * f_var[nr][3].array();
         }
-        
     }
     return forces;
 }

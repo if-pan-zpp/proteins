@@ -24,6 +24,10 @@ public:
     bool sink_pot = false; // for sink-like potential for non-native contacts
     //TODO read sigma_ss from param file
     map<pair<string,string>, Scalar> sigma_ss; // part of sigma1 in cg.f, symmetrical
+    map<string, int> residue_types; //ksdchns in cg.f
+    Scalar elektr_screen = 10.0_AA;
+    Scalar coul = 85.0_dAA2;
+    bool ele_perm_const = true;
 
     // Angle potential:
     bool bond_angle_pot = true;
@@ -36,7 +40,7 @@ public:
     Scalar k_phi_2 = 0.66;        // CDB in cg.f
 
     // PID potential:
-    bool pseudo_improper_dihedral_pot = true;
+    bool pseudo_improper_dihedral_pot = false;
     bool use_mj_matrix = false; // use Miyazawa-Jernigan matrix (lmj in cg.f)
     // TODO read M-J matrix from param file
     map<pair<string,string>, Scalar> mj_matrix; //M-J matrix, should be symmetrical
@@ -51,6 +55,7 @@ public:
     Scalar pid_rmin_neg = 6.2_AA;
     Scalar eps_bb = 0.2;
     bool pid_barrier = false;
+    bool pid_electrostatics = false;
 
     // Other potentials:
     Scalar H1 = 50.0_dAA2;

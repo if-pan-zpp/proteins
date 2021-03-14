@@ -29,6 +29,13 @@ private:
     bool sink_pot;
     Scalar eps_bb;
     bool pid_barrier;
+    //electrostatics
+    const map<string, int> &residue_types;
+    bool pid_electrostatics;
+    Scalar elektr_screen;
+    Scalar coul;
+    bool ele_perm_const;
+    enum type_names{none=0, hydrophobic=1, polar=2, polar_neg=3, polar_pos=4};
 
     Scalar min_lambda = 0.00005;
     Scalar min_norm = 0.01;
