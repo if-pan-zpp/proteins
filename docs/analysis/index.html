@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analysis of legacy code &#8212; Proteins  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Overview" href="overview.html" />
+    <link rel="prev" title="Vision (Nov 2020)" href="../overview/vision.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="analysis-of-legacy-code">
+<h1>Analysis of legacy code<a class="headerlink" href="#analysis-of-legacy-code" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="sources">
+<h2>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h2>
+<p>The goal is to replicate (whilst possibly fixing bugs, if any are found) the program originally written in Fortran 77 language. More specifically, given were:</p>
+<ul class="simple">
+<li><p>the source code, in the form of a single file <code class="docutils literal notranslate"><span class="pre">cg.f</span></code> spanning 8.3k LOC;</p></li>
+<li><p>input parameters (<code class="docutils literal notranslate"><span class="pre">parameters.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMD05.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMDCG.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">parametersMJ96.txt</span></code>) in a custom format;</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">README.txt</span></code> file, which in particular contains:</p>
+<ul>
+<li><p>compilation instructions;</p></li>
+<li><p>usage instructions;</p></li>
+<li><p>descriptions of input files and (some) global variables;</p></li>
+<li><p>descriptions of output files;</p></li>
+</ul>
+</li>
+<li><p>three examples, in ascending order of required simulation time and complexity:</p>
+<ul>
+<li><p>simulation of ubiquitin, given in PDB format;</p></li>
+<li><p>simulation of <code class="docutils literal notranslate"><span class="pre">9AAC</span></code>, given in custom format;</p></li>
+<li><p>simulation of gluten;</p></li>
+</ul>
+</li>
+<li><p>a research paper <code class="docutils literal notranslate"><span class="pre">CPC14.pdf</span></code> providing the high-level description of the underlying model.</p></li>
+</ul>
+<div class="section" id="fortran-95-sources">
+<h3>Fortran 95 sources<a class="headerlink" href="#fortran-95-sources" title="Permalink to this headline">¶</a></h3>
+<p>Later in development, we acquired an incomplete reimplementation of Fortran 77 program in Fortran 95. The extent to which this implementation is helpful is unclear.</p>
+</div>
+<div class="section" id="papers">
+<h3>Papers<a class="headerlink" href="#papers" title="Permalink to this headline">¶</a></h3>
+<p>Aside from the code itself, we found some research papers utilizing the program to shed more light on certain aspects of the simulation that we found unclear:</p>
+<ul class="simple">
+<li><p>aforementioned <code class="docutils literal notranslate"><span class="pre">CPC14.pdf</span></code>;</p></li>
+<li><p><a class="reference external" href="http://ftp.wwpdb.org/pub/pdb/doc/format_descriptions/Format_v33_A4.pdf">PDB reference</a>;</p></li>
+<li><p><a class="reference external" href="https://arxiv.org/pdf/1807.07825.pdf">Disordered peptide chains in an alpha-C-based coarse-grained model</a>;</p></li>
+<li><p><a class="reference external" href="http://www.ifpan.edu.pl/rn_ifpan/Mioduszewski-doktorat.pdf">Dynamika molekularna białek strukturalnie nieuporządkowanych oraz ich agregatów w ramach modeli gruboziarnistych</a>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>We found it more appropriate to document the code out-of-source. This is chiefly due to the significant “entanglement” of the reference source code.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#high-level-control-flow">High-level control flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#geometry-of-the-system">Geometry of the system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#types-of-proteins">Types of proteins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#force-fields">Force fields</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="main.html">Main/global code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#preparation">Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#main-loop">Main loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#remarks">Remarks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#simulation">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#math">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#input">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#stats">Stats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#output">Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#walls">Walls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#other">Other</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proteins</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Project overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis of legacy code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sources">Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../openmm/index.html">OpenMM implementation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../overview/vision.html" title="previous chapter">Vision (Nov 2020)</a></li>
+      <li>Next: <a href="overview.html" title="next chapter">Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, IF PAN, ZPP Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/analysis/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
